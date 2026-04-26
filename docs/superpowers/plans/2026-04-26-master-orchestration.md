@@ -70,7 +70,7 @@ Session A (Foundation)            Session B (Learning surface)
 - **Depends on:** nothing
 - **Blocks:** every other session
 - **Estimated length:** 1 session
-- **Status:** [ ] not started
+- **Status:** [x] complete (2026-04-26 — 5 commits, plan at `docs/superpowers/plans/2026-04-26-session-a-scaffolding.md`)
 
 **Hand-off prompt (paste verbatim into a fresh Claude Code session):**
 
@@ -153,9 +153,9 @@ WORKFLOW
 - After **#2 Reference Vault:** both PDFs present in `reference/`; `INDEX.md` exists with topic-to-page mappings for both; `ONLINE.md` exists with at least 5 verified entries.
 - After **#9 Reactive Companion:** `knowledge/ableton/companion-mode.md` exists with concrete invocation patterns; `CLAUDE.md` updated with companion-mode preference; one end-to-end test recorded showing the MCP returns useful Ableton screen content.
 
-- [ ] **Step 1:** Open fresh session, paste hand-off prompt, complete the cycle
-- [ ] **Step 2:** All three verification gates above passed
-- [ ] **Step 3:** Mark session `[x]` and unblock Sessions B + C
+- [x] **Step 1:** Open fresh session, paste hand-off prompt, complete the cycle
+- [x] **Step 2:** All three verification gates above passed
+- [x] **Step 3:** Mark session `[x]` and unblock Sessions B + C
 
 ---
 
