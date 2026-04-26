@@ -1,0 +1,7 @@
+.secrets/
+sessions/*.draft.md
+scripts/__pycache__/
+scripts/.venv/
+*.log
+.DS_Store
+reference/*.pdf
