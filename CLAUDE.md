@@ -24,7 +24,7 @@ This is not a music generator and not a substitute for Destin doing the work. It
 - `scripts/` — local CLI tools
 - `curriculum.md` — living lesson plan
 - `docs/superpowers/specs/` — master spec + per-subsystem specs
-- `docs/superpowers/plans/` — implementation plans
+- `docs/superpowers/plans/` — implementation plans, one per session/cycle
 
 Secrets live **outside** this repo at `C:\Users\desti\.crunchtronics-tutor-secrets\`.
 
