@@ -64,11 +64,14 @@ Body:
 ```markdown
 # Curriculum
 
+> Schema reference: `docs/superpowers/specs/2026-04-26-master-architecture.md` §7.3.
+
 ## lesson-001: <to be authored by Subsystem #4 — Curriculum & Nudges> [blocked]
-- Why blocked: depends on Subsystem #7 (Taste Profile)
+- Why blocked: depends on Subsystem #7 (Taste Profile) and Subsystem #3 (Knowledge Base)
+- This is a schema placeholder; real lessons land in Session D.
 ```
 
-NO real lesson content. The placeholder exists only so the master spec §7.3 schema is visible to anyone reading the file before #4 ships.
+NO real lesson content. The placeholder exists only so the master spec §7.3 schema is visible to anyone reading the file before #4 ships. The schema-reference line points future readers at the canonical schema definition; the dependency on Subsystem #3 is added because lesson-001 needs both knowledge content (#3) and taste profile (#7) to be authored well.
 
 ### 5. .gitignore
 
