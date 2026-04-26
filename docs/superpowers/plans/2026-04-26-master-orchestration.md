@@ -165,7 +165,7 @@ WORKFLOW
 - **Depends on:** Session A
 - **Parallel with:** Session C
 - **Estimated length:** 1 session for seed content + ongoing iterative expansion during normal tutoring sessions
-- **Status:** [ ] not started
+- **Status:** [x] complete (2026-04-26 — 5 content commits, plan at `docs/superpowers/plans/2026-04-26-session-b-knowledge-base.md`)
 
 **Hand-off prompt:**
 
@@ -203,9 +203,9 @@ Notes:
 
 **Verification:** `knowledge/INDEX.md` exists; each subdirectory has at least the seed files listed; every cheat sheet follows the established template; no `knowledge/artists/` content yet; `knowledge/ableton/companion-mode.md` from Session A is intact and unmodified.
 
-- [ ] **Step 1:** Open fresh session, paste hand-off prompt, complete the cycle
-- [ ] **Step 2:** Verification passed
-- [ ] **Step 3:** Mark session `[x]`
+- [x] **Step 1:** Open fresh session, paste hand-off prompt, complete the cycle
+- [x] **Step 2:** Verification passed
+- [x] **Step 3:** Mark session `[x]`
 
 ---
 
