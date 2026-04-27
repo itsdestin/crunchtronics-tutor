@@ -1,0 +1,27 @@
+"""Shared data classes for the enrichment pipeline."""
+
+from dataclasses import dataclass
+from typing import Optional
+
+
+@dataclass(frozen=True)
+class EnrichmentResult:
+    """One backend's response for a single track.
+
+    All fields are optional. ReccoBeats populates everything; GetSongBPM
+    populates only bpm + key_int + mode. Returned as None from the
+    backend on a miss; the caller handles fallback.
+    """
+
+    bpm: Optional[float] = None
+    key_int: Optional[int] = None  # 0..11 (Spotify-style)
+    mode: Optional[int] = None  # 0 minor, 1 major
+    time_signature: Optional[int] = None
+    energy: Optional[float] = None
+    danceability: Optional[float] = None
+    valence: Optional[float] = None
+    acousticness: Optional[float] = None
+    instrumentalness: Optional[float] = None
+    liveness: Optional[float] = None
+    loudness: Optional[float] = None
+    speechiness: Optional[float] = None
