@@ -1751,6 +1751,10 @@ def read_existing(path: Path) -> dict[str, EnrichedRow]:
     On schema mismatch (corrupt file), back the file up to
     tracks.csv.corrupt-<UTC-timestamp> and return {} so the next write
     rebuilds from scratch.
+
+    Important: Windows cannot rename a file with an open handle, so we
+    read all rows into memory eagerly and close the file before deciding
+    whether to back it up.
     """
     if not path.exists():
         return {}
@@ -1758,14 +1762,22 @@ def read_existing(path: Path) -> dict[str, EnrichedRow]:
     try:
         with open(path, "r", encoding="utf-8", newline="") as f:
             reader = csv.DictReader(f)
-            if reader.fieldnames != CSV_COLUMNS:
-                _backup_corrupt(path)
-                return {}
-            out: dict[str, EnrichedRow] = {}
-            for d in reader:
-                out[d["spotify_id"]] = _csv_dict_to_row(d)
-            return out
-    except (KeyError, csv.Error, UnicodeDecodeError):
+            fieldnames = reader.fieldnames
+            rows_raw = list(reader)
+    except (csv.Error, UnicodeDecodeError):
+        _backup_corrupt(path)
+        return {}
+
+    if fieldnames != CSV_COLUMNS:
+        _backup_corrupt(path)
+        return {}
+
+    try:
+        out: dict[str, EnrichedRow] = {}
+        for d in rows_raw:
+            out[d["spotify_id"]] = _csv_dict_to_row(d)
+        return out
+    except KeyError:
         _backup_corrupt(path)
         return {}
 
