@@ -129,7 +129,13 @@ def _to_enriched_row(
 def _enrich_one(
     track: TrackRecord, now: dt.datetime, getsongbpm_key: Optional[str]
 ) -> EnrichedRow:
-    """Run the fallback chain for one track and return an EnrichedRow."""
+    """Run the fallback chain for one track and return an EnrichedRow.
+
+    Raises:
+        ReccoBeatsRateLimited: ReccoBeats returned 429. Propagated to the
+            caller (main()) so the run can stop cleanly with partial
+            progress preserved.
+    """
     # ReccoBeats first
     recco = fetch_reccobeats(track.spotify_id)
     if recco is not None:
@@ -150,13 +156,23 @@ def _enrich_one(
 def run_summary(
     *,
     total: int,
+    candidates: int,
     newly_enriched: int,
     still_missed: int,
     skipped: dict[str, int],
     getsongbpm_configured: bool,
 ) -> str:
+    """Render the end-of-run summary.
+
+    `total` is the row count in tracks.csv after this run (cumulative;
+    includes orphans). `candidates` is the number of tracks the plan
+    decided to enrich on this run. `newly_enriched` is how many of those
+    actually got hits this run. `still_missed` is the count of `miss:*`
+    rows in the final csv (cumulative — not just from this run).
+    """
     lines = [
-        f"Run complete: {total} tracks total / {newly_enriched} newly enriched / {still_missed} still missed.",
+        f"Run complete: {newly_enriched}/{candidates} candidates newly enriched. "
+        f"tracks.csv now has {total} rows; {still_missed} still missed cumulatively.",
     ]
     if any(skipped.values()):
         lines.append(
@@ -261,6 +277,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     print(
         run_summary(
             total=len(rows_to_write),
+            candidates=len(plan),
             newly_enriched=newly_enriched,
             still_missed=still_missed,
             skipped=skipped,
