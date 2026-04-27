@@ -50,3 +50,13 @@ def test_invalid_key_int_raises():
 def test_invalid_mode_int_raises():
     with pytest.raises(ValueError, match="mode_int must be 0 or 1"):
         camelot_from_int_key(0, 2)
+
+
+def test_invalid_key_int_raises_from_standard():
+    with pytest.raises(ValueError, match="key_int must be in"):
+        key_standard_from_int(12, 1)
+
+
+def test_invalid_mode_int_raises_from_standard():
+    with pytest.raises(ValueError, match="mode_int must be 0 or 1"):
+        key_standard_from_int(0, 2)
