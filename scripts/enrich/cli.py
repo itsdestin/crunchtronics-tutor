@@ -218,6 +218,14 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[list[str]] = None) -> int:
     args = _build_arg_parser().parse_args(argv)
 
+    # Track names + artist names contain arbitrary Unicode (e.g., Ł, ł, ñ, ★).
+    # The default Windows console is cp1252 and crashes when asked to print them.
+    # Reconfigure stdout/stderr to UTF-8 with backslashreplace so unprintable
+    # characters degrade gracefully instead of aborting the run.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="backslashreplace")
+
     if not PLAYLISTS_PATH.exists():
         print(
             f"ERROR: {PLAYLISTS_PATH.relative_to(PROJECT_ROOT)} not found. "
