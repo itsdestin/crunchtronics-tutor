@@ -2285,7 +2285,7 @@ cd scripts
 cd ..
 ```
 
-Expected: all tests pass (camelot 28 + playlists_loader 4 + models 2 + reccobeats 5 + getsongbpm 4 + csv_writer 5 + cli 9 = 57).
+Expected: all tests pass (camelot 28 + playlists_loader 4 + models 2 + reccobeats 6 + getsongbpm 4 + csv_writer 5 + cli 9 = 58).
 
 - [ ] **Step 7: Commit**
 
@@ -2628,7 +2628,7 @@ cd scripts
 cd ..
 ```
 
-Expected: all 57 tests pass. No skips, no errors.
+Expected: all 58 tests pass. No skips, no errors.
 
 - [ ] **Step 2: Verify scope boundaries**
 

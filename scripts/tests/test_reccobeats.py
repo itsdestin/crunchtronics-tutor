@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+import requests
 import responses
 
 from enrich.reccobeats import RECCOBEATS_BASE_URL, ReccoBeatsRateLimited, fetch
@@ -114,7 +115,7 @@ def test_fetch_raises_on_429_during_features():
 
 
 @responses.activate
-def test_fetch_raises_on_5xx():
+def test_fetch_raises_on_5xx_during_resolve():
     spotify_id = "7tZSQgFyzWAAtsb7OUUDbn"
     responses.get(
         f"{RECCOBEATS_BASE_URL}/v1/track",
@@ -122,5 +123,26 @@ def test_fetch_raises_on_5xx():
         match=[responses.matchers.query_param_matcher({"ids": spotify_id})],
     )
 
-    with pytest.raises(Exception):
+    with pytest.raises(requests.HTTPError):
+        fetch(spotify_id)
+
+
+@responses.activate
+def test_fetch_raises_on_5xx_during_features():
+    spotify_id = "7tZSQgFyzWAAtsb7OUUDbn"
+    resolve = _resolve_hit()
+    uuid = resolve["content"][0]["id"]
+
+    responses.get(
+        f"{RECCOBEATS_BASE_URL}/v1/track",
+        json=resolve,
+        status=200,
+        match=[responses.matchers.query_param_matcher({"ids": spotify_id})],
+    )
+    responses.get(
+        f"{RECCOBEATS_BASE_URL}/v1/track/{uuid}/audio-features",
+        status=500,
+    )
+
+    with pytest.raises(requests.HTTPError):
         fetch(spotify_id)
