@@ -78,3 +78,26 @@ Pull cadence is **on-demand only** (overrides master spec §11 #12 — no
 Both `taste/playlists.json` and `taste/.playlist-selection.json` are committed
 to git as snapshots. If `playlists.json` grows past ~5 MB it'll move to
 `.gitignore` (the selection file stays tracked regardless).
+
+## Audio enrichment
+
+When Destin says "enrich my tracks" (or similar), run
+`python scripts/enrich.py` from project root and surface the end-of-run
+summary verbatim.
+
+The script reads `taste/playlists.json` and writes `taste/tracks.csv`.
+Incremental by default — only fetches missing rows + retries misses
+older than 30 days. Flags: `--retry-misses`, `--force-all`, `--dry-run`,
+`--limit N`. Full docs in `scripts/README.md`.
+
+Primary service: **ReccoBeats** (no API key needed). Fallback:
+**GetSongBPM** (key in
+`C:\Users\desti\.crunchtronics-tutor-secrets\audio-enrichment.json` —
+optional, see `scripts/README.md` for the setup walkthrough). If
+unenriched count > 0 and GetSongBPM isn't configured, the script's
+end-of-run summary will recommend setting it up; relay that summary
+verbatim to Destin.
+
+This subsystem overrides master spec §11 #2 (was: GetSongBPM primary)
+and §7.2 (extends the column list with eight audio-feature columns).
+See `docs/superpowers/specs/subsystems/06-audio-enrichment.md` §2.
