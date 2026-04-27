@@ -1,0 +1,6 @@
+{
+    "timestamp": "2026-04-27T05:21:03.397+00:00",
+    "error": "Track not found with id : '00000000-0000-0000-0000-000000000000' not found",
+    "path": "uri=/v1/track/00000000-0000-0000-0000-000000000000/audio-features",
+    "status": 4041
+}
