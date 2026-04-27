@@ -67,7 +67,11 @@ taste/playlists.json (raw Spotify shape, written by plugin)
             On hit → row source="getsongbpm" (BPM + key only; audio-feature columns left empty)
             On miss / no key → row source="miss:reccobeats" or "miss:reccobeats,getsongbpm"
       d. Honor 429 Retry-After; client-side throttle ~1 req/sec per service
-[7] Merge into taste/tracks.csv (existing rows preserved unless re-enriched in this run)
+[7] Merge into taste/tracks.csv. tracks.csv is CUMULATIVE: existing rows are
+    preserved even if their source playlist is no longer in the current
+    playlists.json (which can happen since #5 pulls are selective and the
+    user's selection can change between runs). Only --force-all rebuilds
+    from scratch.
 [8] Print end-of-run summary:
       - X tracks total / Y newly enriched / Z still missed
       - If Z > 0 and getsongbpm not configured → nudge to set up GetSongBPM

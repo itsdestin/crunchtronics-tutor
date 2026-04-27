@@ -52,73 +52,161 @@ Add this content at the end of `CLAUDE.md`:
 
 ## Spotify data
 
-This project depends on the `spotify-services` marketplace plugin. If it isn't
-installed, run `/spotify-services-setup`.
+This project depends on the `spotify-services` marketplace plugin. If it
+isn't installed, run `/spotify-services-setup`.
 
-When Destin says "pull my Spotify data" (or similar), invoke the plugin's
-`export_all_playlists` tool with the `output_path` argument set to
-`C:\Users\desti\crunchtronics-tutor\taste\playlists.json`. After it completes,
-report the playlist count and total track count from the JSON, and surface
-any errors verbatim.
+Pulls are **selective with persisted choice**: Destin picks playlists once,
+the choice is saved at `taste/.playlist-selection.json`, subsequent pulls
+re-use it silently.
+
+When Destin says "pull my Spotify data" (or similar):
+
+1. Read `taste/.playlist-selection.json` if it exists.
+2. **If it exists AND Destin did not say "fresh" / "reselect" / "pick again":**
+   - Use the saved playlist IDs.
+   - Tell Destin: *"Pulling your saved selection: <names>. Say 'pull my Spotify data fresh' to re-pick."*
+3. **Otherwise:**
+   1. Invoke the plugin's `mcp__spotify-services__playlists_list_mine` tool with `all=true` to get every playlist.
+   2. Show Destin a numbered list with playlist names and track counts.
+   3. Ask which playlists to include (number, name, comma-separated, or "all").
+   4. Save the chosen playlist IDs + names to `taste/.playlist-selection.json`:
+      ```json
+      {
+        "selected_at": "<UTC ISO timestamp>",
+        "playlists": [{"id": "...", "name": "..."}]
+      }
+      ```
+4. For each selected playlist ID, invoke `mcp__spotify-services__playlists_get_items` with `all=true` to get its tracks.
+5. Assemble the per-playlist responses into `taste/playlists.json` matching master spec §7.1:
+   ```json
+   {
+     "user_id": "<from playlists_list_mine response or user_profile call>",
+     "fetched_at": "<UTC ISO timestamp>",
+     "playlists": [{"id": "...", "name": "...", "tracks": [...]}]
+   }
+   ```
+6. Report the playlist count, total track count, and any errors.
+
+**Do NOT use `export_all_playlists`** — it dumps the entire library and bypasses selection.
 
 Pull cadence is **on-demand only** (overrides master spec §11 #12 — no
 `/schedule` entry). Taste evolves slowly; manual pulls are the right cadence.
 
-The `taste/playlists.json` file is committed to git as a snapshot. If it
-grows past ~5 MB it'll move to `.gitignore`.
+Both `taste/playlists.json` and `taste/.playlist-selection.json` are committed
+to git as snapshots. If `playlists.json` grows past ~5 MB it'll move to
+`.gitignore` (the selection file stays tracked regardless).
 ```
 
 - [ ] **Step 2: Verify the section reads cleanly in context**
 
 Re-read `CLAUDE.md` end-to-end to make sure the new section flows after "Pointers" and doesn't duplicate or contradict anything earlier.
 
-### Task 1.3: Run `export_all_playlists` against Destin's account
+### Task 1.3: Walk Destin through the playlist picker and pull selected playlists
 
 **Files:**
-- Create: `taste/playlists.json` (written by the plugin)
+- Create: `taste/.playlist-selection.json`
+- Create: `taste/playlists.json`
 
-- [ ] **Step 1: Invoke the plugin tool**
+This task is interactive. The first run is the "pick playlists" path; subsequent runs use the saved selection. We're doing the first run here.
 
-Use the `mcp__spotify-services__export_all_playlists` tool with `output_path` set to `C:\Users\desti\crunchtronics-tutor\taste\playlists.json`. The tool may take 30s–2min depending on how many playlists Destin has.
+- [ ] **Step 1: List Destin's playlists**
 
-- [ ] **Step 2: Verify the file exists and is non-empty**
+Invoke `mcp__spotify-services__playlists_list_mine` with `all=true`. Capture the full list (id + name + track count per playlist).
 
-```bash
-ls -la taste/playlists.json
+- [ ] **Step 2: Show Destin the list and ask which to include**
+
+Present a numbered list to Destin:
+
+```
+You have N playlists on Spotify:
+
+  1. Bangers (47 tracks)
+  2. Late-night drives (89 tracks)
+  3. Workout (122 tracks)
+  ...
+
+Which would you like to pull for the tutor? (number, name, comma-separated list, or "all")
 ```
 
-Expected: file exists with size > 1000 bytes.
+Wait for his answer. Resolve to a list of `{id, name}` records.
 
-- [ ] **Step 3: Verify schema**
+- [ ] **Step 3: Save the selection**
+
+Write `taste/.playlist-selection.json`:
+
+```json
+{
+  "selected_at": "<UTC ISO timestamp from datetime.now(timezone.utc).isoformat() with Z suffix>",
+  "playlists": [
+    {"id": "<playlist_id>", "name": "<playlist_name>"}
+  ]
+}
+```
+
+- [ ] **Step 4: Pull each selected playlist's tracks**
+
+For each entry in `selection.playlists`, invoke `mcp__spotify-services__playlists_get_items` with the playlist ID and `all=true`. Collect the responses.
+
+- [ ] **Step 5: Assemble `taste/playlists.json`**
+
+Write `taste/playlists.json` matching master spec §7.1:
+
+```json
+{
+  "user_id": "<destin's spotify user id>",
+  "fetched_at": "<UTC ISO timestamp>",
+  "playlists": [
+    {
+      "id": "<playlist_id>",
+      "name": "<playlist_name>",
+      "tracks": [<verbatim from playlists_get_items response>]
+    }
+  ]
+}
+```
+
+If `user_id` isn't returned by the playlist tools, call `mcp__spotify-services__user_profile` once to get it.
+
+- [ ] **Step 6: Verify schema and selection consistency**
 
 ```bash
 python -c "
 import json
 with open('taste/playlists.json') as f:
     data = json.load(f)
+with open('taste/.playlist-selection.json') as f:
+    selection = json.load(f)
+
 assert 'user_id' in data, 'missing user_id'
 assert 'fetched_at' in data, 'missing fetched_at'
 assert 'playlists' in data, 'missing playlists'
 assert isinstance(data['playlists'], list), 'playlists is not a list'
 assert len(data['playlists']) > 0, 'playlists is empty'
-print(f'OK: user_id={data[\"user_id\"]}, fetched_at={data[\"fetched_at\"]}, playlists={len(data[\"playlists\"])}')
+
+selected_ids = {p['id'] for p in selection['playlists']}
+pulled_ids = {p['id'] for p in data['playlists']}
+assert selected_ids == pulled_ids, f'selection/pull mismatch: in selection but not pulled: {selected_ids - pulled_ids}; pulled but not selected: {pulled_ids - selected_ids}'
+
+total_tracks = sum(len(p.get('tracks', [])) for p in data['playlists'])
+print(f'OK: user_id={data[\"user_id\"]}, playlists={len(data[\"playlists\"])}, tracks={total_tracks}')
 "
 ```
 
-Expected: prints `OK: user_id=..., fetched_at=..., playlists=N` where N >= 1.
+Expected: prints `OK: user_id=..., playlists=N, tracks=M` where N matches the selection size and M >= 1.
 
-If any assertion fails, the plugin invocation needs investigation before proceeding to Phase 2. Common cause: token expiry — fix with `/spotify-services-reauth`.
+If any assertion fails, investigate before proceeding to Phase 2. Common cause: token expiry — fix with `/spotify-services-reauth`.
 
 ### Task 1.4: Commit Phase 1
 
 **Files:**
 - Modify: `CLAUDE.md`
 - Create: `taste/playlists.json`
+- Create: `taste/.playlist-selection.json`
 
 - [ ] **Step 1: Stage the changes**
 
 ```bash
-git add CLAUDE.md taste/playlists.json
+git add CLAUDE.md taste/playlists.json taste/.playlist-selection.json
 git status
 ```
 
@@ -126,15 +214,16 @@ git status
 
 ```bash
 git commit -m "$(cat <<'EOF'
-feat(taste): subsystem #5 — wire spotify-services plugin as data source
+feat(taste): subsystem #5 — selective spotify pull via spotify-services plugin
 
-Adds the Spotify-data section to CLAUDE.md declaring the plugin
-dependency and the on-demand pull mechanism, and ships the first
-real export of Destin's playlists via the plugin's
-export_all_playlists tool.
+Adds the Spotify-data section to CLAUDE.md describing the
+selective-with-persisted-choice pull workflow, runs the first
+playlist pick, and ships the resulting taste/playlists.json plus the
+saved taste/.playlist-selection.json.
 
 Overrides master spec §11 #12: pull cadence is on-demand only,
-no /schedule entry.
+no /schedule entry. Selection persists across pulls; "fresh"/--reselect
+to re-pick.
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 EOF
@@ -145,10 +234,12 @@ EOF
 
 Before starting Phase 2:
 
-- [ ] `CLAUDE.md` has the `## Spotify data` section
-- [ ] `taste/playlists.json` exists, valid JSON, schema-correct, non-empty playlists
+- [ ] `CLAUDE.md` has the `## Spotify data` section with the selective-pull workflow
+- [ ] `taste/.playlist-selection.json` exists with at least one playlist chosen
+- [ ] `taste/playlists.json` exists, valid JSON, schema-correct, non-empty playlists, IDs consistent with the selection file
+- [ ] No `export_all_playlists` invocation appears anywhere in the workflow (check CLAUDE.md doesn't mention it as a step)
 - [ ] No Spotify-API code added to this repo: `grep -r "spotipy" scripts/ 2>/dev/null` returns nothing
-- [ ] Phase 1 commit pushed to local master
+- [ ] Phase 1 commit on local master
 
 ---
 
@@ -1621,6 +1712,7 @@ from unittest.mock import patch
 import pytest
 
 from enrich.cli import (
+    merge_for_write,
     needs_enrichment,
     plan_run,
     run_summary,
@@ -1706,6 +1798,31 @@ def test_plan_run_force_all_enriches_everything():
     now = dt.datetime(2026, 4, 26, tzinfo=dt.timezone.utc)
     plan = plan_run(tracks, existing, now=now, force_all=True)
     assert len(plan) == 2
+
+
+def test_merge_for_write_default_preserves_orphans():
+    """Cumulative behavior: rows whose track is no longer in playlists.json
+    survive (because #5 pulls are selective and selection can change)."""
+    tracks_in_playlists = [_make_track("a")]  # only "a" is in current playlists.json
+    final = {
+        "a": _make_row("a", "reccobeats", "2026-04-26T00:00:00Z"),
+        "orphan": _make_row("orphan", "reccobeats", "2026-04-01T00:00:00Z"),  # was pulled in a previous selection
+    }
+    rows = merge_for_write(final, tracks_in_playlists, force_all=False)
+    ids = {r.spotify_id for r in rows}
+    assert ids == {"a", "orphan"}, "orphan row must survive cumulative writes"
+
+
+def test_merge_for_write_force_all_drops_orphans():
+    """--force-all rebuilds from scratch: rows not in current playlists.json get dropped."""
+    tracks_in_playlists = [_make_track("a")]
+    final = {
+        "a": _make_row("a", "reccobeats", "2026-04-26T00:00:00Z"),
+        "orphan": _make_row("orphan", "reccobeats", "2026-04-01T00:00:00Z"),
+    }
+    rows = merge_for_write(final, tracks_in_playlists, force_all=True)
+    ids = {r.spotify_id for r in rows}
+    assert ids == {"a"}, "orphan must be dropped under --force-all"
 ```
 
 - [ ] **Step 2: Run the test, verify it fails**
@@ -1852,6 +1969,26 @@ def _enrich_one(
     return _to_enriched_row(track, result=None, source=miss_source, now=now)
 
 
+def merge_for_write(
+    final: dict[str, EnrichedRow],
+    tracks_in_playlists: list[TrackRecord],
+    *,
+    force_all: bool,
+) -> list[EnrichedRow]:
+    """Decide which rows to write to tracks.csv.
+
+    Default (cumulative): every row in `final` survives, including orphans
+    whose source playlist is no longer in playlists.json (because #5 pulls
+    are selective and the user's selection can change).
+
+    --force-all: only rows currently in playlists.json survive — orphans
+    get dropped, the csv is genuinely rebuilt from scratch.
+    """
+    if force_all:
+        return [final[t.spotify_id] for t in tracks_in_playlists if t.spotify_id in final]
+    return list(final.values())
+
+
 def run_summary(
     *,
     total: int,
@@ -1957,9 +2094,13 @@ def main(argv: Optional[list[str]] = None) -> int:
             newly_enriched += 1
         time.sleep(THROTTLE_SECONDS)
 
-    # Preserve only rows whose track is still in playlists.json (drop removed-from-library tracks).
-    still_in_playlists = {t.spotify_id for t in tracks}
-    rows_to_write = [r for sid, r in final.items() if sid in still_in_playlists]
+    # tracks.csv is CUMULATIVE by default — keep all enriched rows even if
+    # their source playlist is no longer in playlists.json. #5 pulls are
+    # selective and the user's selection can change between runs; orphaned
+    # rows shouldn't be silently dropped. --force-all is the only flag that
+    # rebuilds from scratch — under it we keep only rows present in the
+    # current playlists.json.
+    rows_to_write = merge_for_write(final, tracks, force_all=args.force_all)
 
     write_atomic(TRACKS_CSV_PATH, rows_to_write)
 
@@ -2008,7 +2149,7 @@ cd scripts
 cd ..
 ```
 
-Expected: 7 PASSED.
+Expected: 9 PASSED.
 
 - [ ] **Step 6: Run the full test suite for regressions**
 
@@ -2018,7 +2159,7 @@ cd scripts
 cd ..
 ```
 
-Expected: all tests pass (camelot 26 + playlists_loader 4 + models 2 + reccobeats 4 + getsongbpm 4 + csv_writer 5 + cli 7 = 52).
+Expected: all tests pass (camelot 26 + playlists_loader 4 + models 2 + reccobeats 4 + getsongbpm 4 + csv_writer 5 + cli 9 = 54).
 
 - [ ] **Step 7: Commit**
 
@@ -2361,7 +2502,7 @@ cd scripts
 cd ..
 ```
 
-Expected: all 52 tests pass. No skips, no errors.
+Expected: all 54 tests pass. No skips, no errors.
 
 - [ ] **Step 2: Verify scope boundaries**
 
