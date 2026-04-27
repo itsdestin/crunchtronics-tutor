@@ -1,0 +1,69 @@
+{
+  "user_id": "testuser",
+  "fetched_at": "2026-04-26T00:00:00Z",
+  "playlists": [
+    {
+      "id": "pl1",
+      "name": "Bangers",
+      "tracks": [
+        {
+          "id": "track001",
+          "type": "track",
+          "name": "Track One",
+          "artists": [{"id": "art1", "name": "Artist A"}, {"id": "art2", "name": "Artist B"}],
+          "album": {"name": "Album X"},
+          "duration_ms": 240000,
+          "external_ids": {"isrc": "USRC12345601"}
+        },
+        {
+          "id": "track002",
+          "type": "track",
+          "name": "Track Two",
+          "artists": [{"id": "art3", "name": "Artist C"}],
+          "album": {"name": "Album Y"},
+          "duration_ms": 180500,
+          "external_ids": {}
+        },
+        {
+          "id": null,
+          "type": "track",
+          "is_local": true,
+          "name": "Local File",
+          "artists": [{"id": null, "name": "Unknown"}],
+          "album": {"name": ""},
+          "duration_ms": 200000
+        }
+      ]
+    },
+    {
+      "id": "pl2",
+      "name": "More Bangers",
+      "tracks": [
+        {
+          "id": "track001",
+          "type": "track",
+          "name": "Track One",
+          "artists": [{"id": "art1", "name": "Artist A"}],
+          "album": {"name": "Album X"},
+          "duration_ms": 240000,
+          "external_ids": {"isrc": "USRC12345601"}
+        },
+        {
+          "id": "ep001",
+          "type": "episode",
+          "name": "Some Podcast Ep",
+          "duration_ms": 1800000
+        },
+        {
+          "id": "track003",
+          "type": "track",
+          "name": "Track Three",
+          "artists": [{"id": "art4", "name": "Artist D"}],
+          "album": {"name": "Album Z"},
+          "duration_ms": 210000,
+          "external_ids": {"isrc": "USRC12345603"}
+        }
+      ]
+    }
+  ]
+}
