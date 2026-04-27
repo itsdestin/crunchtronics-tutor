@@ -214,38 +214,42 @@ Notes:
 - **Phase:** Personalization (data acquisition)
 - **Depends on:** Session A
 - **Parallel with:** Session B
-- **Estimated length:** 1–2 sessions (OAuth can be finicky on first attempt)
-- **Status:** [ ] not started
+- **Estimated length:** ~30 min for #5 (now plugin-consumer only) + 1 session for #6
+- **Status:** [ ] not started — but **major scope reduction**: as of 2026-04-26 the bulk of Subsystem #5 has been extracted into the public `spotify-services` marketplace plugin (shipped via [wecoded-marketplace PR #14](https://github.com/itsdestin/wecoded-marketplace/pull/14)). #5 is now ~10 lines of `CLAUDE.md` plus a verified pull. #6 (audio enrichment) is unchanged. Plugin design lives at `wecoded-marketplace/spotify-services/docs/design.md`; tutor's brainstorm artifact at `docs/superpowers/specs/2026-04-26-spotify-services-plugin-design.md`; tutor-side subsystem spec at `docs/superpowers/specs/subsystems/05-spotify-integration.md` (already rewritten for plugin-consumer scope).
 
 **Hand-off prompt:**
 
 ```
 I'm starting Session C of the Crunchtronics Tutor project: Data pull.
 
-This session ships two subsystems in build order: #5 Spotify Integration → #6 Audio Feature Enrichment. Order matters: #5's output schema (taste/playlists.json) is #6's input — lock the schema in the brainstorm before #6 starts implementation.
+This session ships two subsystems in build order: #5 Spotify Integration → #6 Audio Feature Enrichment. Order matters: #5's output schema (taste/playlists.json) is #6's input — confirm the schema before #6 starts implementation.
 
 READ FIRST (mandatory): docs/superpowers/specs/2026-04-26-master-architecture.md
 
 ================================================================
-SUBSYSTEM #5 — Spotify Integration
+SUBSYSTEM #5 — Spotify Integration (PLUGIN CONSUMER — drastically reduced scope)
 ================================================================
-Master-spec sections: §3.1 (CRITICAL: Spotify deprecated audio-features and audio-analysis for new apps as of Nov 27, 2024 — do NOT call those endpoints); §5.1 #5 (one-liner contract); §6 (data flow — your output is taste/playlists.json, consumed by #6); §7.1 (output format: raw Spotify shape, dumped verbatim); §11 default decisions #1 (user registers app), #12 (weekly schedule).
+Master-spec sections: §3.1 (Spotify deprecation context — still relevant); §5.1 #5; §6 (data flow); §7.1 (taste/playlists.json shape).
 
-Does:
-- Documents the Spotify Developer app registration steps the user must perform once (registration page URL, what scopes to request, what redirect URI to set)
-- Implements OAuth 2.0 Authorization Code with PKCE (or refresh-token flow if simpler) for a personal-use app
-- Writes the CLI script under scripts/ (you decide language during brainstorm — Python with `spotipy` is the obvious default; document why)
-- The script:
-  - Reads OAuth tokens from C:\Users\desti\.crunchtronics-tutor-secrets\spotify.json
-  - Fetches all user playlists (own + followed) and their full track lists
-  - Writes the result verbatim to taste/playlists.json
-  - Is idempotent — re-runs overwrite cleanly
-  - Refreshes the OAuth token automatically when expired
-- Sets up a /schedule entry for weekly automated runs (configurable cadence, default weekly per §11 #12)
+**Major scope change:** as of 2026-04-26 the bulk of this subsystem has been EXTRACTED into the public `spotify-services` marketplace plugin (merged via wecoded-marketplace PR #14). The plugin owns OAuth, the Python MCP server, the API client, scheduling, and the export tool. **This subsystem no longer authors any Spotify code.**
 
-Notes:
-- OAuth dance requires user interaction (browser redirect for first auth). Document this clearly so the user knows what to expect on first run.
-- Test against the user's actual Spotify account end-to-end before declaring done — fetch a real playlist, confirm taste/playlists.json populates correctly.
+The tutor-side subsystem spec at `docs/superpowers/specs/subsystems/05-spotify-integration.md` already reflects this reduced scope — read it first.
+
+Does (now):
+- Adds a section to project CLAUDE.md declaring the dependency on the spotify-services marketplace plugin and how to invoke it ("ask me to pull your Spotify data" → Claude invokes plugin's `export_all_playlists` tool with the path C:\Users\desti\crunchtronics-tutor\taste\playlists.json)
+- Verifies the plugin is installed locally (`/spotify-services-setup` already run; tokens at ~/.youcoded/spotify-services/tokens.json)
+- Runs `export_all_playlists` once against Destin's account; commits the resulting taste/playlists.json
+- Validates per §7.1 schema (top-level {user_id, fetched_at, playlists}; non-empty)
+- Documents the override of master-spec §11 #12 (pull frequency: ON-DEMAND only, no /schedule entry — see subsystem spec §2)
+
+Does NOT (per the rewritten subsystem spec):
+- No OAuth, PKCE, token refresh, or scope handling — plugin owns it
+- No `spotipy` import in this repo
+- No CLI script under scripts/ for Spotify
+- No /schedule entry
+- No transformation of playlists.json (Subsystem #6 transforms it)
+
+Estimated time: ~30 minutes once the plugin is verified working.
 
 ================================================================
 SUBSYSTEM #6 — Audio Feature Enrichment
@@ -271,26 +275,28 @@ Notes:
 ================================================================
 CROSS-SUBSYSTEM BOUNDARIES — do NOT do any of these
 ================================================================
+- Do not author any Spotify-API code in this repo (the spotify-services plugin owns it). #5 is plugin-consumer only.
 - Do not call audio-features or audio-analysis Spotify endpoints (deprecated; will return 403). All audio characterization happens in #6 via a different API.
-- Do not transform Spotify data shape inside #5 — store raw Spotify JSON. Schema-translation is #6's job.
-- Do not modify taste/playlists.json from inside #6 (that's #5's owned file).
+- Do not transform Spotify data shape — playlists.json stores the raw Spotify shape the plugin produces. Schema-translation is #6's job.
+- Do not modify taste/playlists.json from inside #6 (the plugin owns its production; #6 only reads it).
 - Do not write taste/profile.md (Session D / Subsystem #7).
-- Do not commit secrets — secrets land at C:\Users\desti\.crunchtronics-tutor-secrets\, already excluded by Session A's .gitignore. Verify nothing OAuth-related lands inside the repo.
 - Do not embed API keys in code — read from C:\Users\desti\.crunchtronics-tutor-secrets\audio-enrichment.json.
+- Do not add a /schedule entry for the Spotify pull — per the rewritten Subsystem #5 spec §2, pull cadence is on-demand only (overrides master spec §11 #12).
 
 ================================================================
 WORKFLOW
 ================================================================
-1. Run superpowers:brainstorming ONCE. Design both subsystems together — lock the playlists.json schema first since #6 depends on it, then design #6.
-2. Write TWO per-subsystem spec files:
-   - docs/superpowers/specs/subsystems/05-spotify-integration.md
+1. Run superpowers:brainstorming ONCE — but design only #6 in depth. #5 is essentially a documentation-and-verification exercise (the plugin's already shipped).
+2. Verify the spotify-services plugin is installed and working locally. If `/spotify-services-setup` hasn't been run yet, run it first; verify with `bash ~/.claude/plugins/marketplaces/youcoded/plugins/spotify-services/setup/smoke-test.sh` (should print ✓ Authenticated and ✓ Local backend).
+3. Update the existing per-subsystem spec file for #5 ONLY if the rewritten version at docs/superpowers/specs/subsystems/05-spotify-integration.md is missing details you uncover during the brainstorm.
+4. Write the per-subsystem spec for #6:
    - docs/superpowers/specs/subsystems/06-audio-enrichment.md
-3. Run superpowers:writing-plans ONCE for one combined implementation plan with two numbered phases (#5 first, then #6).
-4. Implement in build order. Verify each subsystem (per the gates below) before moving to the next.
+5. Run superpowers:writing-plans ONCE for one combined implementation plan with two numbered phases (#5 first — quick — then #6).
+6. Implement in build order. Verify each subsystem (per the gates below) before moving to the next.
 ```
 
 **Verification gates (run before starting the next subsystem within this session):**
-- After **#5 Spotify Integration:** `scripts/` has the pull script; `taste/playlists.json` populated with real data; `/schedule` entry exists; OAuth tokens live outside the repo and refresh works.
+- After **#5 Spotify Integration:** `CLAUDE.md` has the plugin-dependency section and on-demand pull mechanism; `taste/playlists.json` exists and populated by a real run of the plugin's `export_all_playlists` tool against Destin's account; file satisfies §7.1 schema (`{user_id, fetched_at, playlists}` non-empty); no Spotify-API code in this repo (`grep -r spotipy scripts/` returns nothing).
 - After **#6 Audio Enrichment:** `scripts/` has the enrichment script; `taste/tracks.csv` populated with real data covering BPM and key for as many tracks as the service has; schema matches §7.2 exactly; the enricher runs incrementally (re-runs only fetch missing rows).
 
 - [ ] **Step 1:** Open fresh session, paste hand-off prompt, complete the cycle

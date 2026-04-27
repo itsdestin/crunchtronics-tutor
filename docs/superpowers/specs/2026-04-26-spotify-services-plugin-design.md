@@ -1,8 +1,8 @@
 # spotify-services Marketplace Plugin — Design Spec
 
 - **Date:** 2026-04-26
-- **Status:** Drafted (via brainstorm in tutor repo, awaiting user review)
-- **Lives outside this repo:** the plugin's eventual home is the WeCoded marketplace (alongside `google-services`). This spec lives in the tutor repo for now because the brainstorm originated here; it should be copied to `plugins/spotify-services/docs/design.md` once the plugin's directory is initialized.
+- **Status:** ✅ **Shipped 2026-04-26** — `spotify-services` plugin merged to `wecoded-marketplace` master via [PR #14](https://github.com/itsdestin/wecoded-marketplace/pull/14). Canonical design doc (with all corrections applied during implementation) now lives at `wecoded-marketplace/spotify-services/docs/design.md`. **This file is a historical brainstorm artifact** — do not edit; consult the marketplace copy for current truth. 31 commits including 7 cross-platform Windows fixes captured in `youcoded-dev/docs/PITFALLS.md` "MCP Plugin Authoring (Cross-Platform)" section.
+- **Lived outside this repo (now true):** plugin source ships in `wecoded-marketplace/spotify-services/`. This spec lived in the tutor repo while the brainstorm was in flight.
 - **Related tutor-side spec:** `docs/superpowers/specs/subsystems/05-spotify-integration.md`
 - **Related master spec sections (tutor's perspective):** §3.1 (Spotify deprecation context), §5.1 #5 (the subsystem the plugin replaces the bulk of), §6 (data flow), §7.1 (`taste/playlists.json` shape — the plugin's main output for the tutor)
 
