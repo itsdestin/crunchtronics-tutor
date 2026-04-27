@@ -1,6 +1,5 @@
 """Tests for the playlists loader."""
 
-import json
 from pathlib import Path
 
 import pytest
@@ -25,6 +24,7 @@ def test_skipped_count_includes_local_and_episode():
     _, skipped = load_and_dedupe(FIXTURE)
     assert skipped["local_files"] == 1
     assert skipped["episodes_or_other"] == 1
+    assert skipped["duplicates"] == 1  # track001 appears in pl1 and pl2
 
 
 def test_track_record_metadata_fields():
