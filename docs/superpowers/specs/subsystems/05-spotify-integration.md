@@ -1,7 +1,7 @@
 # Subsystem #5 — Spotify Integration
 
 - **Date:** 2026-04-26
-- **Status:** Drafted (via brainstorm; awaiting user review)
+- **Status:** Shipped 2026-04-26 (Session C-tutor; plan at `docs/superpowers/plans/2026-04-26-session-c-data-pull.md`)
 - **Master spec:** `docs/superpowers/specs/2026-04-26-master-architecture.md`
 - **Master-spec sections referenced:** §3.1 (Spotify deprecation context), §5.1 #5 (one-liner contract), §6 (data flow), §7.1 (`taste/playlists.json` shape), §11 default decision #1 (user registers app), §11 default decision #12 (pull frequency — **overridden**, see §2)
 - **Companion spec:** `docs/superpowers/specs/2026-04-26-spotify-services-plugin-design.md` (the plugin this subsystem consumes)

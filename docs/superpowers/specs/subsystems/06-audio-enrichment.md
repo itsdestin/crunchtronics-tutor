@@ -1,7 +1,7 @@
 # Subsystem #6 — Audio Feature Enrichment
 
 - **Date:** 2026-04-26
-- **Status:** Drafted (via brainstorm; awaiting user review)
+- **Status:** Shipped 2026-04-26 (Session C; plan at `docs/superpowers/plans/2026-04-26-session-c-data-pull.md`; first real run produced 73.2% ReccoBeats coverage on the EDM playlist)
 - **Master spec:** `docs/superpowers/specs/2026-04-26-master-architecture.md`
 - **Master-spec sections referenced:** §3.1 (Spotify deprecation context — the reason this subsystem exists), §5.1 #6 (one-liner contract), §6 (data flow), §7.2 (`taste/tracks.csv` shape — **extended** by this spec; see §2), §8 (refresh cadence: incremental, rate-limit aware), §11 default decision #2 (GetSongBPM as primary — **overridden** by this spec; see §2)
 - **Companion spec:** `docs/superpowers/specs/subsystems/05-spotify-integration.md` (this subsystem's input producer)

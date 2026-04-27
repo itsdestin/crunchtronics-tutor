@@ -215,7 +215,7 @@ Notes:
 - **Depends on:** Session A
 - **Parallel with:** Session B
 - **Estimated length:** ~30 min for #5 (now plugin-consumer only) + 1 session for #6
-- **Status:** [ ] not started — but **major scope reduction**: as of 2026-04-26 the bulk of Subsystem #5 has been extracted into the public `spotify-services` marketplace plugin (shipped via [wecoded-marketplace PR #14](https://github.com/itsdestin/wecoded-marketplace/pull/14)). #5 is now ~10 lines of `CLAUDE.md` plus a verified pull. #6 (audio enrichment) is unchanged. Plugin design lives at `wecoded-marketplace/spotify-services/docs/design.md`; tutor's brainstorm artifact at `docs/superpowers/specs/2026-04-26-spotify-services-plugin-design.md`; tutor-side subsystem spec at `docs/superpowers/specs/subsystems/05-spotify-integration.md` (already rewritten for plugin-consumer scope).
+- **Status:** [x] complete (2026-04-26 — plan at `docs/superpowers/plans/2026-04-26-session-c-data-pull.md`; ~20 commits across both phases). Subsystem #5 shipped as plugin-consumer (selective playlist pull saved to `taste/.playlist-selection.json` → `taste/playlists.json`). Subsystem #6 shipped under `scripts/` (Python 3.12 / uv project; ReccoBeats two-step lookup primary, GetSongBPM fallback, 30-day TTL on misses, cumulative csv merge); 58 unit tests passing; first real run produced `taste/tracks.csv` with 73.2% ReccoBeats coverage on the EDM playlist (115 of 157 tracks).
 
 **Hand-off prompt:**
 
@@ -299,9 +299,9 @@ WORKFLOW
 - After **#5 Spotify Integration:** `CLAUDE.md` has the plugin-dependency section and on-demand pull mechanism; `taste/playlists.json` exists and populated by a real run of the plugin's `export_all_playlists` tool against Destin's account; file satisfies §7.1 schema (`{user_id, fetched_at, playlists}` non-empty); no Spotify-API code in this repo (`grep -r spotipy scripts/` returns nothing).
 - After **#6 Audio Enrichment:** `scripts/` has the enrichment script; `taste/tracks.csv` populated with real data covering BPM and key for as many tracks as the service has; schema matches §7.2 exactly; the enricher runs incrementally (re-runs only fetch missing rows).
 
-- [ ] **Step 1:** Open fresh session, paste hand-off prompt, complete the cycle
-- [ ] **Step 2:** Both verification gates passed
-- [ ] **Step 3:** Mark session `[x]`
+- [x] **Step 1:** Open fresh session, paste hand-off prompt, complete the cycle
+- [x] **Step 2:** Both verification gates passed
+- [x] **Step 3:** Mark session `[x]` — unblocks Session D
 
 ---
 
