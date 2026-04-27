@@ -978,29 +978,68 @@ EOF
 )"
 ```
 
-### Task 2.6: Build the ReccoBeats client
+### Task 2.6: Build the ReccoBeats client (two-step lookup)
+
+**Background (verified 2026-04-26 by Task 2.2):** ReccoBeats requires a two-step lookup — the audio-features endpoint takes ReccoBeats internal UUIDs, NOT Spotify IDs. To go from a Spotify track ID to audio features:
+
+1. `GET /v1/track?ids=<spotify_id>` → returns `{"content": [{id, href, isrc, ...}, ...]}`. The `content` array contains a ReccoBeats track object for each Spotify ID they have. Empty `content` means the track isn't in their DB. **This is also how we detect "not in DB" — the audio-features endpoint never sees Spotify IDs in this design, so we don't get HTTP 404s on it for the "unknown track" case.**
+2. `GET /v1/track/<reccobeats-uuid>/audio-features` → returns the audio-features payload for the resolved UUID.
+
+The single-track client function (`fetch(spotify_id)`) hides this two-step pattern behind one call. Its return-shape contract is unchanged (`EnrichmentResult | None`).
+
+The audio-features response shape (verified) is:
+
+```json
+{
+  "id": "edd5003e-3d49-49ab-92ec-4f5439368e22",
+  "href": "https://open.spotify.com/track/...",
+  "isrc": "QM24S2501046",
+  "acousticness": 0.00438,
+  "danceability": 0.738,
+  "energy": 0.785,
+  "instrumentalness": 0.681,
+  "key": 5,
+  "liveness": 0.0799,
+  "loudness": -7.25,
+  "mode": 0,
+  "speechiness": 0.0361,
+  "tempo": 126.037,
+  "valence": 0.331
+}
+```
+
+Note: there is **no `time_signature` field**. The schema column for it stays empty in v1.
 
 **Files:**
+- Create: `scripts/tests/fixtures/reccobeats-resolve-hit.json` (real API capture)
+- Create: `scripts/tests/fixtures/reccobeats-resolve-empty.json` (real API capture)
 - Create: `scripts/tests/test_reccobeats.py`
 - Create: `scripts/enrich/reccobeats.py`
 
-- [ ] **Step 1: Confirm the field names from the captured fixture**
+- [ ] **Step 1: Capture the resolution-call fixtures**
 
-Open `scripts/tests/fixtures/reccobeats-track-hit.json` (captured in Task 2.2). Note the exact field names ReccoBeats returns. Common possibilities (verify against the actual fixture):
+```bash
+# Hit: a known-good EDM Spotify ID (Disco Lines & GUDFELLA "Sunny")
+curl -sS "https://api.reccobeats.com/v1/track?ids=7tZSQgFyzWAAtsb7OUUDbn" \
+  -H "Accept: application/json" \
+  | python -m json.tool > scripts/tests/fixtures/reccobeats-resolve-hit.json
+cat scripts/tests/fixtures/reccobeats-resolve-hit.json
 
-- BPM may be `tempo` or `bpm`
-- Key may be `key` (int) or `keySignature` (string)
-- Mode may be `mode` (int) or absent
-- Time signature may be `timeSignature` or `time_signature`
+# Empty: a non-existent Spotify ID
+curl -sS "https://api.reccobeats.com/v1/track?ids=0000000000000000000000" \
+  -H "Accept: application/json" \
+  | python -m json.tool > scripts/tests/fixtures/reccobeats-resolve-empty.json
+cat scripts/tests/fixtures/reccobeats-resolve-empty.json
+```
 
-The implementation below assumes the typical Spotify-mimicking shape. **If your captured fixture has different names, update both the implementation and the test fixture parsing in this task accordingly.**
+Verify the hit fixture has a non-empty `content` array with at least one object containing `id` (UUID), `href` (Spotify URL), `isrc`. Verify the empty fixture has `content: []`. The Spotify ID `7tZSQgFyzWAAtsb7OUUDbn` is the same one Task 2.2 used for `reccobeats-track-hit.json` — its UUID should match the `id` field there (`edd5003e-3d49-49ab-92ec-4f5439368e22`).
 
 - [ ] **Step 2: Write the failing test**
 
 Create `scripts/tests/test_reccobeats.py`:
 
 ```python
-"""Tests for the ReccoBeats client."""
+"""Tests for the ReccoBeats client (two-step lookup)."""
 
 import json
 from pathlib import Path
@@ -1013,45 +1052,78 @@ from enrich.reccobeats import RECCOBEATS_BASE_URL, ReccoBeatsRateLimited, fetch
 FIXTURE_DIR = Path(__file__).parent / "fixtures"
 
 
+def _resolve_hit():
+    return json.loads((FIXTURE_DIR / "reccobeats-resolve-hit.json").read_text())
+
+
+def _resolve_empty():
+    return json.loads((FIXTURE_DIR / "reccobeats-resolve-empty.json").read_text())
+
+
+def _features_hit():
+    return json.loads((FIXTURE_DIR / "reccobeats-track-hit.json").read_text())
+
+
 @responses.activate
-def test_fetch_returns_full_vector_on_200():
-    spotify_id = "4uLU6hMCjMI75M1A2tKUQC"
-    fixture = json.loads((FIXTURE_DIR / "reccobeats-track-hit.json").read_text())
+def test_fetch_returns_audio_features_on_resolved_track():
+    spotify_id = "7tZSQgFyzWAAtsb7OUUDbn"
+    resolve = _resolve_hit()
+    features = _features_hit()
+    uuid = resolve["content"][0]["id"]
+
     responses.get(
-        f"{RECCOBEATS_BASE_URL}/v1/track/{spotify_id}/audio-features",
-        json=fixture,
+        f"{RECCOBEATS_BASE_URL}/v1/track",
+        json=resolve,
+        status=200,
+        match=[responses.matchers.query_param_matcher({"ids": spotify_id})],
+    )
+    responses.get(
+        f"{RECCOBEATS_BASE_URL}/v1/track/{uuid}/audio-features",
+        json=features,
         status=200,
     )
 
     result = fetch(spotify_id)
 
     assert result is not None
-    assert result.bpm is not None
-    assert result.key_int is not None
-    assert result.mode in (0, 1)
-    # The remaining fields are populated when ReccoBeats returns them.
-    # We don't assert exact values because they come from the real API.
+    assert result.bpm == features["tempo"]
+    assert result.key_int == features["key"]
+    assert result.mode == features["mode"]
+    assert result.energy == features["energy"]
+    assert result.danceability == features["danceability"]
+    assert result.valence == features["valence"]
+    assert result.acousticness == features["acousticness"]
+    assert result.instrumentalness == features["instrumentalness"]
+    assert result.liveness == features["liveness"]
+    assert result.loudness == features["loudness"]
+    assert result.speechiness == features["speechiness"]
+    assert result.time_signature is None  # ReccoBeats doesn't return this
 
 
 @responses.activate
-def test_fetch_returns_none_on_404():
+def test_fetch_returns_none_when_resolve_is_empty():
     spotify_id = "0000000000000000000000"
     responses.get(
-        f"{RECCOBEATS_BASE_URL}/v1/track/{spotify_id}/audio-features",
-        json={"error": "Track not found"},
-        status=404,
+        f"{RECCOBEATS_BASE_URL}/v1/track",
+        json=_resolve_empty(),
+        status=200,
+        match=[responses.matchers.query_param_matcher({"ids": spotify_id})],
     )
 
     assert fetch(spotify_id) is None
+    # Note: only one request was made — the audio-features endpoint
+    # is never called when resolve returns empty content.
+    assert len(responses.calls) == 1
 
 
 @responses.activate
-def test_fetch_raises_on_429():
-    spotify_id = "4uLU6hMCjMI75M1A2tKUQC"
+def test_fetch_raises_on_429_during_resolve():
+    spotify_id = "7tZSQgFyzWAAtsb7OUUDbn"
     responses.get(
-        f"{RECCOBEATS_BASE_URL}/v1/track/{spotify_id}/audio-features",
+        f"{RECCOBEATS_BASE_URL}/v1/track",
         status=429,
         headers={"Retry-After": "30"},
+        match=[responses.matchers.query_param_matcher({"ids": spotify_id})],
     )
 
     with pytest.raises(ReccoBeatsRateLimited) as exc_info:
@@ -1060,11 +1132,35 @@ def test_fetch_raises_on_429():
 
 
 @responses.activate
-def test_fetch_raises_on_5xx():
-    spotify_id = "4uLU6hMCjMI75M1A2tKUQC"
+def test_fetch_raises_on_429_during_features():
+    spotify_id = "7tZSQgFyzWAAtsb7OUUDbn"
+    resolve = _resolve_hit()
+    uuid = resolve["content"][0]["id"]
+
     responses.get(
-        f"{RECCOBEATS_BASE_URL}/v1/track/{spotify_id}/audio-features",
+        f"{RECCOBEATS_BASE_URL}/v1/track",
+        json=resolve,
+        status=200,
+        match=[responses.matchers.query_param_matcher({"ids": spotify_id})],
+    )
+    responses.get(
+        f"{RECCOBEATS_BASE_URL}/v1/track/{uuid}/audio-features",
+        status=429,
+        headers={"Retry-After": "10"},
+    )
+
+    with pytest.raises(ReccoBeatsRateLimited) as exc_info:
+        fetch(spotify_id)
+    assert exc_info.value.retry_after_s == 10
+
+
+@responses.activate
+def test_fetch_raises_on_5xx():
+    spotify_id = "7tZSQgFyzWAAtsb7OUUDbn"
+    responses.get(
+        f"{RECCOBEATS_BASE_URL}/v1/track",
         status=500,
+        match=[responses.matchers.query_param_matcher({"ids": spotify_id})],
     )
 
     with pytest.raises(Exception):
@@ -1086,12 +1182,20 @@ Expected: FAIL with `ModuleNotFoundError: No module named 'enrich.reccobeats'`.
 Create `scripts/enrich/reccobeats.py`:
 
 ```python
-"""ReccoBeats client.
+"""ReccoBeats client (two-step lookup).
 
-Single function: fetch(spotify_id) -> EnrichmentResult | None.
-Returns None on 404 (track not in DB).
-Raises ReccoBeatsRateLimited on 429 with the Retry-After value attached.
-Raises requests.HTTPError on other non-2xx.
+Single public function: fetch(spotify_id) -> EnrichmentResult | None.
+
+ReccoBeats does not accept Spotify IDs at the audio-features endpoint;
+it has its own UUID-based identifiers. Going from a Spotify ID to
+audio features is a two-step dance:
+
+  1. GET /v1/track?ids=<spotify_id>  -> returns {"content": [{id: <uuid>, ...}, ...]}
+  2. GET /v1/track/<uuid>/audio-features  -> returns the audio-features payload
+
+Returns None if step 1's content is empty (track not in ReccoBeats DB).
+Raises ReccoBeatsRateLimited on 429 (with Retry-After attached) from
+either step. Raises requests.HTTPError on other non-2xx.
 """
 
 from typing import Optional
@@ -1110,18 +1214,45 @@ class ReccoBeatsRateLimited(Exception):
         self.retry_after_s = retry_after_s
 
 
-def _parse(payload: dict) -> EnrichmentResult:
-    """Adapter: ReccoBeats response JSON -> EnrichmentResult.
+def _check_429(response: requests.Response) -> None:
+    if response.status_code == 429:
+        retry_after = int(response.headers.get("Retry-After", "60"))
+        raise ReccoBeatsRateLimited(retry_after_s=retry_after)
 
-    Field names below match the Spotify-mimicking shape. If the captured
-    fixture in tests/fixtures/reccobeats-track-hit.json shows different
-    names, update the keys here to match.
-    """
+
+def _resolve_spotify_id(spotify_id: str) -> Optional[str]:
+    """Step 1: turn a Spotify track ID into a ReccoBeats UUID, or None if not in DB."""
+    response = requests.get(
+        f"{RECCOBEATS_BASE_URL}/v1/track",
+        params={"ids": spotify_id},
+        timeout=_DEFAULT_TIMEOUT_S,
+        headers={"Accept": "application/json"},
+    )
+    _check_429(response)
+    response.raise_for_status()
+    content = response.json().get("content", [])
+    if not content:
+        return None
+    return content[0]["id"]
+
+
+def _fetch_features(uuid: str) -> EnrichmentResult:
+    """Step 2: fetch audio features by ReccoBeats UUID."""
+    response = requests.get(
+        f"{RECCOBEATS_BASE_URL}/v1/track/{uuid}/audio-features",
+        timeout=_DEFAULT_TIMEOUT_S,
+        headers={"Accept": "application/json"},
+    )
+    _check_429(response)
+    response.raise_for_status()
+    payload = response.json()
+    # Field names verified against the live API on 2026-04-26.
+    # time_signature is not in ReccoBeats' response — left None.
     return EnrichmentResult(
         bpm=payload.get("tempo"),
         key_int=payload.get("key"),
         mode=payload.get("mode"),
-        time_signature=payload.get("timeSignature") or payload.get("time_signature"),
+        time_signature=None,
         energy=payload.get("energy"),
         danceability=payload.get("danceability"),
         valence=payload.get("valence"),
@@ -1134,18 +1265,10 @@ def _parse(payload: dict) -> EnrichmentResult:
 
 
 def fetch(spotify_id: str) -> Optional[EnrichmentResult]:
-    url = f"{RECCOBEATS_BASE_URL}/v1/track/{spotify_id}/audio-features"
-    response = requests.get(url, timeout=_DEFAULT_TIMEOUT_S, headers={"Accept": "application/json"})
-
-    if response.status_code == 200:
-        return _parse(response.json())
-    if response.status_code == 404:
+    uuid = _resolve_spotify_id(spotify_id)
+    if uuid is None:
         return None
-    if response.status_code == 429:
-        retry_after = int(response.headers.get("Retry-After", "60"))
-        raise ReccoBeatsRateLimited(retry_after_s=retry_after)
-    response.raise_for_status()
-    raise RuntimeError(f"unexpected status {response.status_code}")
+    return _fetch_features(uuid)
 ```
 
 - [ ] **Step 5: Run the test, verify it passes**
@@ -1156,17 +1279,20 @@ cd scripts
 cd ..
 ```
 
-Expected: 4 PASSED. If `test_fetch_returns_full_vector_on_200` fails because field names don't match the fixture, adjust `_parse` field keys to match the fixture and re-run.
+Expected: 5 PASSED.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add scripts/enrich/reccobeats.py scripts/tests/test_reccobeats.py
+git add scripts/enrich/reccobeats.py scripts/tests/test_reccobeats.py scripts/tests/fixtures/reccobeats-resolve-hit.json scripts/tests/fixtures/reccobeats-resolve-empty.json
 git commit -m "$(cat <<'EOF'
-feat(enrich): ReccoBeats client (lookup by Spotify track ID)
+feat(enrich): ReccoBeats client with two-step lookup
 
-Single fetch() returning EnrichmentResult or None. Raises a typed
-exception on 429 with Retry-After attached. No auth required.
+ReccoBeats requires resolving Spotify ID -> internal UUID before
+fetching audio features. Single fetch(spotify_id) hides the two
+calls behind one return-shape contract. None when resolve returns
+empty content (track not in DB); typed exception on 429 from either
+step (Retry-After preserved). No auth required.
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 EOF
@@ -2159,7 +2285,7 @@ cd scripts
 cd ..
 ```
 
-Expected: all tests pass (camelot 26 + playlists_loader 4 + models 2 + reccobeats 4 + getsongbpm 4 + csv_writer 5 + cli 9 = 54).
+Expected: all tests pass (camelot 26 + playlists_loader 4 + models 2 + reccobeats 5 + getsongbpm 4 + csv_writer 5 + cli 9 = 55).
 
 - [ ] **Step 7: Commit**
 
@@ -2502,7 +2628,7 @@ cd scripts
 cd ..
 ```
 
-Expected: all 54 tests pass. No skips, no errors.
+Expected: all 55 tests pass. No skips, no errors.
 
 - [ ] **Step 2: Verify scope boundaries**
 

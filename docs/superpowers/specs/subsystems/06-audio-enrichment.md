@@ -26,8 +26,9 @@ This subsystem overrides two default decisions from the master spec:
 
 - **Original default:** GetSongBPM as primary.
 - **Overridden to:** **ReccoBeats** as primary, **GetSongBPM** as fallback.
-- **Reason:** ReccoBeats requires no API key, accepts Spotify track IDs natively (no fuzzy artist+title matching), returns the full Spotify-style audio-features vector (not just BPM + key), and has no attribution / backlink terms of use. GetSongBPM requires email registration plus a public backlink to its site as a free-API condition — the tutor is local-only with no public surface. The `source` column from §7.2 is the swap mechanism: a future service change can be added without disturbing already-enriched rows.
-- **Architectural enabler:** `taste/playlists.json` from Subsystem #5 contains Spotify track IDs verbatim. ReccoBeats accepts these IDs directly via `GET /v1/track/:id/audio-features`, so lookups are exact rather than fuzzy.
+- **Reason:** ReccoBeats requires no API key, looks up by Spotify track ID (exact, no fuzzy artist+title matching), returns the Spotify-style audio-features vector (not just BPM + key), and has no attribution / backlink terms of use. GetSongBPM requires email registration plus a public backlink to its site as a free-API condition — the tutor is local-only with no public surface. The `source` column from §7.2 is the swap mechanism: a future service change can be added without disturbing already-enriched rows.
+- **Architectural enabler:** `taste/playlists.json` from Subsystem #5 contains Spotify track IDs verbatim. ReccoBeats accepts these IDs as input.
+- **API shape (verified against the live API on 2026-04-26 by Task 2.2):** ReccoBeats requires a **two-step lookup** — single-track ID-resolution doesn't accept Spotify IDs at the audio-features endpoint. Step 1: `GET /v1/track?ids=<spotify_id_csv>` resolves Spotify IDs to ReccoBeats internal UUIDs, returning a `content[]` array of `{id: <uuid>, href: <spotify_url>, isrc, ...}` for tracks they have (empty array for unknown IDs — this is also the "not in DB" signal, NOT an HTTP 404). Step 2: `GET /v1/track/<uuid>/audio-features` returns the audio-features payload using the UUID from step 1. The single-track client function (`fetch(spotify_id)`) hides this two-step pattern behind one call; the orchestrator's per-track loop is unchanged.
 
 ### 2.2 Override of §7.2 — `tracks.csv` schema extension
 
@@ -100,7 +101,7 @@ Field semantics:
 - `key_camelot` — string in Camelot notation (e.g., `8B`, `12A`). Computed from `key_standard` via the lookup in §3.7.
 - `key_standard` — string like `C major`, `F# minor`. Derived from ReccoBeats `key` (0–11) + `mode` (0/1) or from GetSongBPM's reported key.
 - `mode` — integer 0 (minor) or 1 (major). From ReccoBeats only.
-- `time_signature` — integer (3, 4, 5, …). From ReccoBeats only.
+- `time_signature` — integer (3, 4, 5, …). **Always empty in v1** — ReccoBeats does not include this field in its audio-features response (verified 2026-04-26). Reserved for a future backend that does (e.g., a local librosa pass during teardowns).
 - `energy`, `danceability`, `valence`, `acousticness`, `instrumentalness`, `liveness`, `speechiness` — floats in `[0, 1]`. From ReccoBeats only.
 - `loudness` — float in dB (typically `-60` to `0`). From ReccoBeats only.
 - `genre` — string. **Empty for v1** — neither service provides it. See §6 for a follow-up note on filling this column from Spotify's artist-genres endpoint or last.fm in a future iteration.
