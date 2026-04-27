@@ -32,3 +32,49 @@ Secrets live **outside** this repo at `C:\Users\desti\.crunchtronics-tutor-secre
 
 - Master architecture: `docs/superpowers/specs/2026-04-26-master-architecture.md`
 - Orchestration plan: `docs/superpowers/plans/2026-04-26-master-orchestration.md`
+
+## Spotify data
+
+This project depends on the `spotify-services` marketplace plugin. If it
+isn't installed, run `/spotify-services-setup`.
+
+Pulls are **selective with persisted choice**: Destin picks playlists once,
+the choice is saved at `taste/.playlist-selection.json`, subsequent pulls
+re-use it silently.
+
+When Destin says "pull my Spotify data" (or similar):
+
+1. Read `taste/.playlist-selection.json` if it exists.
+2. **If it exists AND Destin did not say "fresh" / "reselect" / "pick again":**
+   - Use the saved playlist IDs.
+   - Tell Destin: *"Pulling your saved selection: <names>. Say 'pull my Spotify data fresh' to re-pick."*
+3. **Otherwise:**
+   1. Invoke the plugin's `mcp__spotify-services__playlists_list_mine` tool with `all=true` to get every playlist.
+   2. Show Destin a numbered list with playlist names and track counts.
+   3. Ask which playlists to include (number, name, comma-separated, or "all").
+   4. Save the chosen playlist IDs + names to `taste/.playlist-selection.json`:
+      ```json
+      {
+        "selected_at": "<UTC ISO timestamp>",
+        "playlists": [{"id": "...", "name": "..."}]
+      }
+      ```
+4. For each selected playlist ID, invoke `mcp__spotify-services__playlists_get_items` with `all=true` to get its tracks.
+5. Assemble the per-playlist responses into `taste/playlists.json` matching master spec §7.1:
+   ```json
+   {
+     "user_id": "<from playlists_list_mine response or user_profile call>",
+     "fetched_at": "<UTC ISO timestamp>",
+     "playlists": [{"id": "...", "name": "...", "tracks": [...]}]
+   }
+   ```
+6. Report the playlist count, total track count, and any errors.
+
+**Do NOT use `export_all_playlists`** — it dumps the entire library and bypasses selection.
+
+Pull cadence is **on-demand only** (overrides master spec §11 #12 — no
+`/schedule` entry). Taste evolves slowly; manual pulls are the right cadence.
+
+Both `taste/playlists.json` and `taste/.playlist-selection.json` are committed
+to git as snapshots. If `playlists.json` grows past ~5 MB it'll move to
+`.gitignore` (the selection file stays tracked regardless).
