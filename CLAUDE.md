@@ -101,3 +101,19 @@ verbatim to Destin.
 This subsystem overrides master spec §11 #2 (was: GetSongBPM primary)
 and §7.2 (extends the column list with eight audio-feature columns).
 See `docs/superpowers/specs/subsystems/06-audio-enrichment.md` §2.
+
+## Taste profile
+
+When Destin says "regenerate the taste profile" (or similar), run
+`python scripts/profile_stats.py` from project root, then write
+`taste/profile.md` and the 14 artist pages listed in
+`docs/superpowers/specs/subsystems/07-taste-profile.md` §3.2.
+
+Every external resource on an artist page must be web-search-verified at
+authoring time. If a search returns nothing, the page says "no known pack"
+or "unverified — search inconclusive as of YYYY-MM-DD". Never fabricate
+Splice packs, preset packs, or interview links.
+
+The profile is regenerated on demand only — there is no automatic
+trigger. Subsystem #4 may notice drift via `generated_from_profile` and
+suggest regenerating, but never regenerates automatically.
