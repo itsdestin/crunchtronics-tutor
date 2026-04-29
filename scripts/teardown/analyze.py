@@ -20,6 +20,9 @@ _BANDS_HZ = {
     "air":      (8000.0, None),  # open-top
 }
 
+_SIDECHAIN_THRESHOLD_DB = 3.0
+_SIDECHAIN_THRESHOLD_CONSISTENCY_PCT = 60.0
+
 
 def _per_band_rms(y: np.ndarray, sr: int, hop_length: int = _RMS_HOP_LENGTH) -> "PerBandRMS":
     """Compute per-band RMS curves via STFT magnitude binning.
@@ -146,6 +149,111 @@ def _onset_density_per_band(
     return OnsetDensity(bars=bars)
 
 
+def _sidechain_detection(
+    y: np.ndarray,
+    sr: int,
+    hop_length: int = _RMS_HOP_LENGTH,
+) -> "SidechainResult":
+    """Sidechain detection via kick-onset-aligned bass-band RMS dip analysis.
+
+    Method:
+    1. Detect kicks via librosa.onset.onset_detect on the sub-band onset envelope.
+    2. For each kick onset time, find the bass-band RMS minimum within the next 100ms.
+    3. Compute the rolling local mean of bass-band RMS in a [-250ms, +250ms] window.
+    4. Dip depth in dB = 20 * log10(rolling_mean / dip_min), clamped at 0.
+    5. Aggregate: depth_db_mean, depth_db_p90, consistency_pct.
+    6. Detected when depth_db_mean >= 3.0 AND consistency_pct >= 60.0.
+
+    Spec §3.8 step 16, §3.9.sidechain, §6 implementation note.
+    """
+    from teardown.models import SidechainResult
+
+    n_fft = 2048
+    stft = np.abs(librosa.stft(y, n_fft=n_fft, hop_length=hop_length))
+    freqs = librosa.fft_frequencies(sr=sr, n_fft=n_fft)
+
+    # Sub-band envelope for kick onset detection.
+    sub_lo, sub_hi = _BANDS_HZ["sub"]
+    sub_mask = (freqs >= sub_lo) & (freqs < sub_hi)
+    if not sub_mask.any():
+        return _empty_sidechain_result()
+    sub_env = stft[sub_mask, :].sum(axis=0)
+    kick_frames = librosa.onset.onset_detect(
+        onset_envelope=sub_env, sr=sr, hop_length=hop_length, units="frames"
+    )
+    kick_times_s = librosa.frames_to_time(kick_frames, sr=sr, hop_length=hop_length)
+
+    # Bass-band RMS curve for dip analysis.
+    bass_lo, bass_hi = _BANDS_HZ["bass"]
+    bass_mask = (freqs >= bass_lo) & (freqs < bass_hi)
+    if not bass_mask.any():
+        return _empty_sidechain_result()
+    bass_band = stft[bass_mask, :]
+    bass_rms = np.sqrt(np.mean(bass_band ** 2, axis=0))
+
+    if len(kick_times_s) == 0:
+        return _empty_sidechain_result()
+
+    # Frame-level helpers.
+    def time_to_frame(t: float) -> int:
+        return int(round(t * sr / hop_length))
+
+    dip_db_per_kick: list[float] = []
+    eps = 1e-9
+    for t_kick in kick_times_s:
+        f_kick = time_to_frame(t_kick)
+        f_dip_end = time_to_frame(t_kick + 0.100)  # 100ms window
+        f_window_lo = time_to_frame(t_kick - 0.250)  # rolling mean window
+        f_window_hi = time_to_frame(t_kick + 0.250)
+        f_dip_end = min(f_dip_end, len(bass_rms) - 1)
+        f_window_lo = max(0, f_window_lo)
+        f_window_hi = min(len(bass_rms) - 1, f_window_hi)
+        if f_kick >= len(bass_rms) - 1 or f_dip_end <= f_kick:
+            continue
+        dip_min = float(bass_rms[f_kick:f_dip_end + 1].min())
+        rolling_mean = float(bass_rms[f_window_lo:f_window_hi + 1].mean())
+        if rolling_mean <= eps or dip_min >= rolling_mean:
+            dip_db_per_kick.append(0.0)
+        else:
+            depth = 20.0 * np.log10(rolling_mean / max(dip_min, eps))
+            dip_db_per_kick.append(float(depth))
+
+    if not dip_db_per_kick:
+        return _empty_sidechain_result()
+
+    arr = np.array(dip_db_per_kick)
+    depth_mean = float(arr.mean())
+    depth_p90 = float(np.percentile(arr, 90))
+    consistency_pct = 100.0 * float(np.sum(arr >= _SIDECHAIN_THRESHOLD_DB)) / len(arr)
+    detected = (
+        depth_mean >= _SIDECHAIN_THRESHOLD_DB
+        and consistency_pct >= _SIDECHAIN_THRESHOLD_CONSISTENCY_PCT
+    )
+    return SidechainResult(
+        detected=detected,
+        depth_db_mean=depth_mean,
+        depth_db_p90=depth_p90,
+        consistency_pct=consistency_pct,
+        kicks_examined=len(arr),
+        threshold_db_for_detection=_SIDECHAIN_THRESHOLD_DB,
+        threshold_consistency_for_detection=_SIDECHAIN_THRESHOLD_CONSISTENCY_PCT,
+    )
+
+
+def _empty_sidechain_result() -> "SidechainResult":
+    """Used when no kicks could be examined (no sub-band signal, no kicks, etc.)."""
+    from teardown.models import SidechainResult
+    return SidechainResult(
+        detected=False,
+        depth_db_mean=0.0,
+        depth_db_p90=0.0,
+        consistency_pct=0.0,
+        kicks_examined=0,
+        threshold_db_for_detection=_SIDECHAIN_THRESHOLD_DB,
+        threshold_consistency_for_detection=_SIDECHAIN_THRESHOLD_CONSISTENCY_PCT,
+    )
+
+
 def analyze(audio_path: Path) -> AnalysisResult:
     """Run the full librosa pipeline on an audio file.
 
@@ -203,6 +311,7 @@ def analyze(audio_path: Path) -> AnalysisResult:
     hpss_result = _hpss_split(y, sr)
     centroid_result = _spectral_centroid(y, sr)
     onset_density_result = _onset_density_per_band(y, sr, beat_times_s)
+    sidechain_result = _sidechain_detection(y, sr)
 
     return AnalysisResult(
         duration_s=duration_s,
@@ -218,4 +327,5 @@ def analyze(audio_path: Path) -> AnalysisResult:
         hpss=hpss_result,
         spectral_centroid=centroid_result,
         onset_density=onset_density_result,
+        sidechain=sidechain_result,
     )
