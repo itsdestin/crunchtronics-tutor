@@ -390,7 +390,7 @@ WORKFLOW
 - **Depends on:** Session C minimum; ideally also Session D
 - **Parallel with:** none
 - **Estimated length:** 2–3 sessions (most ambitious subsystem)
-- **Status:** [ ] not started
+- **Status:** [x] complete (2026-04-29 — plan at `docs/superpowers/plans/2026-04-28-session-e-teardown-pipeline.md`; subsystem #8 shipped; verification gate passed on John Summit — "crystallized (feat. Inéz)")
 
 **Hand-off prompt:**
 
@@ -439,15 +439,15 @@ Notes:
 
 **Verification:** end-to-end test passes — pick one taste-anchor track, run teardown, confirm `teardowns/<slug>/{analysis.json, teardown.md, recipe.md}` all populate; recipe targets Lite floor with at least one Intro+ note; recipe is comprehensible to a beginner.
 
-- [ ] **Step 1:** Open fresh session, paste hand-off prompt, complete the cycle
-- [ ] **Step 2:** Verification passed
-- [ ] **Step 3:** Mark session `[x]` — full system complete
+- [x] **Step 1:** Open fresh session, paste hand-off prompt, complete the cycle
+- [x] **Step 2:** Verification passed
+- [x] **Step 3:** Mark session `[x]` — full system complete
 
 ---
 
 ## Done criteria (whole system)
 
-- [ ] All 5 sessions above marked `[x]` (which means all 9 subsystems shipping)
+- [x] All 5 sessions above marked `[x]` (which means all 9 subsystems shipping)
 - [ ] User has actually used the system for at least one full Ableton session and the curriculum has at least one `[done]` lesson
 - [ ] User has run at least one teardown end-to-end and used the recipe to build something in Ableton
 
