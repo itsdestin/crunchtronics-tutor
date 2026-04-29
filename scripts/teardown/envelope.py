@@ -1,4 +1,4 @@
-"""Compose and write the analysis.json envelope (spec §3.9)."""
+"""Compose and write the analysis.json envelope (spec §3.9, v1.1 §2.4)."""
 
 import json
 from datetime import datetime, timezone
@@ -10,7 +10,26 @@ import numpy as np
 from teardown.key import KeyEstimate
 from teardown.models import AnalysisResult
 
-TOOL_VERSION = "0.1.0"
+TOOL_VERSION_V10 = "0.1.0"
+TOOL_VERSION_V11 = "0.2.0"
+
+_BAND_HZ = {
+    "sub":      (20, 60),
+    "bass":     (60, 250),
+    "low_mids": (250, 2000),
+    "highs":    (2000, 8000),
+    "air":      (8000, None),
+}
+
+
+def _summary(arr: np.ndarray) -> dict[str, float]:
+    a = np.asarray(arr)
+    return {
+        "mean": float(a.mean()),
+        "p10": float(np.percentile(a, 10)),
+        "p50": float(np.percentile(a, 50)),
+        "p90": float(np.percentile(a, 90)),
+    }
 
 
 def compose_envelope(
@@ -24,14 +43,16 @@ def compose_envelope(
     source_basename: str,
     csv_context: Optional[dict[str, Any]],
 ) -> dict[str, Any]:
-    """Build the JSON-serializable envelope per spec §3.9."""
+    """Build the JSON-serializable envelope per spec §3.9.
+
+    When AnalysisResult v1.1 fields (per_band_rms, hpss, spectral_centroid,
+    onset_density, sidechain) are present, output the v1.1 schema with
+    tool_version="0.2.0" and the new top-level keys. When they're all None
+    (v1.0 callers), output the v1.0 schema with tool_version="0.1.0" and
+    the v1.1 keys absent.
+    """
     rms = np.asarray(result.rms_values)
-    rms_summary = {
-        "mean": float(rms.mean()),
-        "p10": float(np.percentile(rms, 10)),
-        "p50": float(np.percentile(rms, 50)),
-        "p90": float(np.percentile(rms, 90)),
-    }
+    rms_summary = _summary(rms)
 
     tempo: dict[str, Any] = {"bpm_librosa": float(result.bpm)}
     key: dict[str, Any] = {
@@ -53,8 +74,16 @@ def compose_envelope(
             key["agree"] = csv_camelot == key_estimate.camelot
         csv_block = csv_context
 
-    return {
-        "tool_version": TOOL_VERSION,
+    is_v11 = (
+        result.per_band_rms is not None
+        or result.hpss is not None
+        or result.spectral_centroid is not None
+        or result.onset_density is not None
+        or result.sidechain is not None
+    )
+
+    envelope: dict[str, Any] = {
+        "tool_version": TOOL_VERSION_V11 if is_v11 else TOOL_VERSION_V10,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "source": {
             "url": source_url,
@@ -81,15 +110,87 @@ def compose_envelope(
             "rms_values": [float(v) for v in result.rms_values],
             "rms_summary": rms_summary,
         },
-        "chroma_mean": [float(v) for v in result.chroma_mean],
-        "mfcc_summary": {
-            "n_coeffs": len(result.mfcc_means),
-            "means": [float(v) for v in result.mfcc_means],
-            "stds": [float(v) for v in result.mfcc_stds],
-        },
-        "sections": [],
-        "csv_context": csv_block,
     }
+
+    if result.per_band_rms is not None:
+        pb = result.per_band_rms
+        bands_out: dict[str, Any] = {}
+        band_arrays = {
+            "sub": pb.sub_rms,
+            "bass": pb.bass_rms,
+            "low_mids": pb.low_mids_rms,
+            "highs": pb.highs_rms,
+            "air": pb.air_rms,
+        }
+        for name, arr in band_arrays.items():
+            lo, hi = _BAND_HZ[name]
+            bands_out[name] = {
+                "hz_low": lo,
+                "hz_high": hi,
+                "rms_values": [float(v) for v in arr],
+                "rms_summary": _summary(arr),
+            }
+        envelope["per_band_rms"] = {"hop_length": pb.hop_length, "bands": bands_out}
+
+    if result.hpss is not None:
+        h = result.hpss
+        envelope["hpss"] = {
+            "hop_length": h.hop_length,
+            "harmonic_rms_values": [float(v) for v in h.harmonic_rms],
+            "percussive_rms_values": [float(v) for v in h.percussive_rms],
+            "harmonic_rms_summary": _summary(h.harmonic_rms),
+            "percussive_rms_summary": _summary(h.percussive_rms),
+        }
+
+    if result.spectral_centroid is not None:
+        c = result.spectral_centroid
+        c_arr = np.asarray(c.values_hz)
+        envelope["spectral_centroid"] = {
+            "hop_length": c.hop_length,
+            "values_hz": [float(v) for v in c_arr],
+            "summary_hz": {
+                "mean": float(c_arr.mean()),
+                "p10": float(np.percentile(c_arr, 10)),
+                "p50": float(np.percentile(c_arr, 50)),
+                "p90": float(np.percentile(c_arr, 90)),
+            },
+        }
+
+    if result.onset_density is not None:
+        envelope["onset_density"] = {
+            "bars": [
+                {
+                    "bar_index": b.bar_index,
+                    "start_s": b.start_s,
+                    "end_s": b.end_s,
+                    "onsets_per_band": dict(b.onsets_per_band),
+                }
+                for b in result.onset_density.bars
+            ]
+        }
+
+    if result.sidechain is not None:
+        sc = result.sidechain
+        envelope["sidechain"] = {
+            "detected": sc.detected,
+            "depth_db_mean": sc.depth_db_mean,
+            "depth_db_p90": sc.depth_db_p90,
+            "consistency_pct": sc.consistency_pct,
+            "kicks_examined": sc.kicks_examined,
+            "threshold_db_for_detection": sc.threshold_db_for_detection,
+            "threshold_consistency_for_detection": sc.threshold_consistency_for_detection,
+            "method": sc.method,
+        }
+
+    envelope["chroma_mean"] = [float(v) for v in result.chroma_mean]
+    envelope["mfcc_summary"] = {
+        "n_coeffs": len(result.mfcc_means),
+        "means": [float(v) for v in result.mfcc_means],
+        "stds": [float(v) for v in result.mfcc_stds],
+    }
+    envelope["sections"] = []
+    envelope["csv_context"] = csv_block
+    return envelope
 
 
 def write_envelope(envelope: dict[str, Any], out_path: Path) -> None:
