@@ -117,3 +117,34 @@ Splice packs, preset packs, or interview links.
 The profile is regenerated on demand only — there is no automatic
 trigger. Subsystem #4 may notice drift via `generated_from_profile` and
 suggest regenerating, but never regenerates automatically.
+
+## Curriculum & nudges
+
+The living lesson plan is `curriculum.md`. Schema reference:
+`docs/superpowers/specs/subsystems/04-curriculum-and-nudges.md`. Per-session
+logs live in `sessions/YYYY-MM-DD-<topic-slug>.md` (template in §3.7 of that
+spec).
+
+**Session-start nudge.** Before your first response in any session, list
+`sessions/*.md` (excluding `.gitkeep`) and find the most recent by filename.
+Parse the date from the filename. If no log exists or the delta to today is
+≥ the nudge staleness threshold below, lead your first reply with a
+3-sentence nudge per §3.8.2 of the spec: lesson identity, practice task +
+time, offer to redirect. Skip the nudge if the most recent log is within
+the threshold.
+
+**Nudge staleness threshold:** 2 calendar days. (Adjust here to retune.)
+
+**Session-end ritual.** When Destin signals end-of-session, write
+`sessions/YYYY-MM-DD-<topic-slug>.md` per §3.7 of the spec and update
+`curriculum.md` per the §3.4 end-of-session protocol. Confirm both in
+chat. Do not commit — leave the diff in the working tree.
+
+**Profile drift.** When you read `curriculum.md`, compare its
+`generated_from_profile` front-matter to `taste/profile.md`'s `generated_at`.
+If the profile is newer, run the §3.5 re-sync rule (reorder `[blocked]`
+lessons to the new anchor order; insert lessons for newly-anchored genres
+if missing). Surface the changes to Destin and offer to revert.
+
+This subsystem overrides master spec §11 #4 and §8's nudge row — see
+`docs/superpowers/specs/subsystems/04-curriculum-and-nudges.md` §2.
