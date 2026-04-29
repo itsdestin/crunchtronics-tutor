@@ -85,6 +85,67 @@ def _spectral_centroid(y: np.ndarray, sr: int, hop_length: int = _RMS_HOP_LENGTH
     return CentroidResult(hop_length=hop_length, values_hz=centroid)
 
 
+def _onset_density_per_band(
+    y: np.ndarray,
+    sr: int,
+    beat_times_s: np.ndarray,
+    hop_length: int = _RMS_HOP_LENGTH,
+) -> "OnsetDensity":
+    """Per-band onset detection, bucketed into bars (4 beats each).
+
+    Spec §3.8 step 15, §3.9.onset_density.
+    """
+    from teardown.models import OnsetDensity, OnsetDensityBar
+
+    # For each band, compute a band-filtered onset envelope and detect onsets.
+    # Using STFT-magnitude band-slicing (cheaper than re-loading audio per band).
+    n_fft = 2048
+    stft = np.abs(librosa.stft(y, n_fft=n_fft, hop_length=hop_length))
+    freqs = librosa.fft_frequencies(sr=sr, n_fft=n_fft)
+
+    band_onset_times: dict[str, np.ndarray] = {}
+    for name, (lo, hi) in _BANDS_HZ.items():
+        if hi is None:
+            mask = freqs >= lo
+        else:
+            mask = (freqs >= lo) & (freqs < hi)
+        if not mask.any():
+            band_onset_times[name] = np.array([])
+            continue
+        band_stft = stft[mask, :]
+        # Reduce to a 1-D envelope per frame: sum across bins.
+        env = band_stft.sum(axis=0)
+        # librosa onset_detect on a precomputed envelope:
+        onset_frames = librosa.onset.onset_detect(
+            onset_envelope=env, sr=sr, hop_length=hop_length, units="frames"
+        )
+        band_onset_times[name] = librosa.frames_to_time(
+            onset_frames, sr=sr, hop_length=hop_length
+        )
+
+    # Bucket by bar (4 consecutive beats per bar).
+    bars: list[OnsetDensityBar] = []
+    n_bars = max(0, (len(beat_times_s) - 1) // 4)
+    for bar_index in range(n_bars):
+        start_s = float(beat_times_s[bar_index * 4])
+        end_idx = bar_index * 4 + 4
+        if end_idx >= len(beat_times_s):
+            break
+        end_s = float(beat_times_s[end_idx])
+        counts: dict = {}
+        for name in _BANDS_HZ.keys():
+            ts = band_onset_times[name]
+            counts[name] = int(np.sum((ts >= start_s) & (ts < end_s)))
+        bars.append(OnsetDensityBar(
+            bar_index=bar_index,
+            start_s=start_s,
+            end_s=end_s,
+            onsets_per_band=counts,
+        ))
+
+    return OnsetDensity(bars=bars)
+
+
 def analyze(audio_path: Path) -> AnalysisResult:
     """Run the full librosa pipeline on an audio file.
 
@@ -141,6 +202,7 @@ def analyze(audio_path: Path) -> AnalysisResult:
     per_band = _per_band_rms(y, sr)
     hpss_result = _hpss_split(y, sr)
     centroid_result = _spectral_centroid(y, sr)
+    onset_density_result = _onset_density_per_band(y, sr, beat_times_s)
 
     return AnalysisResult(
         duration_s=duration_s,
@@ -155,4 +217,5 @@ def analyze(audio_path: Path) -> AnalysisResult:
         per_band_rms=per_band,
         hpss=hpss_result,
         spectral_centroid=centroid_result,
+        onset_density=onset_density_result,
     )
