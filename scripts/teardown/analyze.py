@@ -55,6 +55,23 @@ def _per_band_rms(y: np.ndarray, sr: int, hop_length: int = _RMS_HOP_LENGTH) -> 
     )
 
 
+def _hpss_split(y: np.ndarray, sr: int, hop_length: int = _RMS_HOP_LENGTH) -> "HPSSResult":
+    """Harmonic-percussive source separation + per-component RMS.
+
+    Spec §3.8 step 13, §3.9.hpss.
+    """
+    from teardown.models import HPSSResult
+
+    y_h, y_p = librosa.effects.hpss(y)
+    harmonic_rms = librosa.feature.rms(y=y_h, hop_length=hop_length).flatten()
+    percussive_rms = librosa.feature.rms(y=y_p, hop_length=hop_length).flatten()
+    return HPSSResult(
+        hop_length=hop_length,
+        harmonic_rms=harmonic_rms,
+        percussive_rms=percussive_rms,
+    )
+
+
 def analyze(audio_path: Path) -> AnalysisResult:
     """Run the full librosa pipeline on an audio file.
 
@@ -109,6 +126,7 @@ def analyze(audio_path: Path) -> AnalysisResult:
     mfcc_stds = mfcc.std(axis=1)
 
     per_band = _per_band_rms(y, sr)
+    hpss_result = _hpss_split(y, sr)
 
     return AnalysisResult(
         duration_s=duration_s,
@@ -121,4 +139,5 @@ def analyze(audio_path: Path) -> AnalysisResult:
         mfcc_means=mfcc_means,
         mfcc_stds=mfcc_stds,
         per_band_rms=per_band,
+        hpss=hpss_result,
     )
