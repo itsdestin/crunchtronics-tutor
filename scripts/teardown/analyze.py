@@ -12,6 +12,48 @@ _ONSET_HOP_LENGTH = 256   # finer grid → better tempo resolution; hop=512 read
 _RMS_HOP_LENGTH = 512
 _N_MFCC = 13
 
+_BANDS_HZ = {
+    "sub":      (20.0, 60.0),
+    "bass":     (60.0, 250.0),
+    "low_mids": (250.0, 2000.0),
+    "highs":    (2000.0, 8000.0),
+    "air":      (8000.0, None),  # open-top
+}
+
+
+def _per_band_rms(y: np.ndarray, sr: int, hop_length: int = _RMS_HOP_LENGTH) -> "PerBandRMS":
+    """Compute per-band RMS curves via STFT magnitude binning.
+
+    Spec §3.8 step 12, §3.9.per_band_rms.
+    """
+    from teardown.models import PerBandRMS
+
+    n_fft = 2048  # standard
+    stft = np.abs(librosa.stft(y, n_fft=n_fft, hop_length=hop_length))
+    freqs = librosa.fft_frequencies(sr=sr, n_fft=n_fft)
+
+    band_rms = {}
+    for name, (lo, hi) in _BANDS_HZ.items():
+        if hi is None:
+            mask = freqs >= lo
+        else:
+            mask = (freqs >= lo) & (freqs < hi)
+        if not mask.any():
+            band_rms[name] = np.zeros(stft.shape[1])
+            continue
+        # RMS per time frame within the band.
+        band_mag = stft[mask, :]
+        band_rms[name] = np.sqrt(np.mean(band_mag ** 2, axis=0))
+
+    return PerBandRMS(
+        hop_length=hop_length,
+        sub_rms=band_rms["sub"],
+        bass_rms=band_rms["bass"],
+        low_mids_rms=band_rms["low_mids"],
+        highs_rms=band_rms["highs"],
+        air_rms=band_rms["air"],
+    )
+
 
 def analyze(audio_path: Path) -> AnalysisResult:
     """Run the full librosa pipeline on an audio file.
@@ -66,6 +108,8 @@ def analyze(audio_path: Path) -> AnalysisResult:
     mfcc_means = mfcc.mean(axis=1)
     mfcc_stds = mfcc.std(axis=1)
 
+    per_band = _per_band_rms(y, sr)
+
     return AnalysisResult(
         duration_s=duration_s,
         sample_rate=sr,
@@ -76,4 +120,5 @@ def analyze(audio_path: Path) -> AnalysisResult:
         rms_hop_length=_RMS_HOP_LENGTH,
         mfcc_means=mfcc_means,
         mfcc_stds=mfcc_stds,
+        per_band_rms=per_band,
     )
