@@ -72,6 +72,19 @@ def _hpss_split(y: np.ndarray, sr: int, hop_length: int = _RMS_HOP_LENGTH) -> "H
     )
 
 
+def _spectral_centroid(y: np.ndarray, sr: int, hop_length: int = _RMS_HOP_LENGTH) -> "CentroidResult":
+    """Spectral centroid curve over time, in Hz.
+
+    Spec §3.8 step 14, §3.9.spectral_centroid.
+    """
+    from teardown.models import CentroidResult
+
+    centroid = librosa.feature.spectral_centroid(
+        y=y, sr=sr, hop_length=hop_length
+    ).squeeze()
+    return CentroidResult(hop_length=hop_length, values_hz=centroid)
+
+
 def analyze(audio_path: Path) -> AnalysisResult:
     """Run the full librosa pipeline on an audio file.
 
@@ -127,6 +140,7 @@ def analyze(audio_path: Path) -> AnalysisResult:
 
     per_band = _per_band_rms(y, sr)
     hpss_result = _hpss_split(y, sr)
+    centroid_result = _spectral_centroid(y, sr)
 
     return AnalysisResult(
         duration_s=duration_s,
@@ -140,4 +154,5 @@ def analyze(audio_path: Path) -> AnalysisResult:
         mfcc_stds=mfcc_stds,
         per_band_rms=per_band,
         hpss=hpss_result,
+        spectral_centroid=centroid_result,
     )
