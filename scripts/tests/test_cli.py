@@ -59,31 +59,17 @@ def test_needs_enrichment_skips_recent_misses():
     assert needs_enrichment(track, existing=row, now=now) is False
 
 
-def test_run_summary_nudges_when_unenriched_and_no_getsongbpm():
+def test_run_summary_reports_counts():
     summary = run_summary(
         total=10,
         candidates=10,
         newly_enriched=7,
         still_missed=3,
         skipped={"local_files": 0, "episodes_or_other": 0, "duplicates": 0},
-        getsongbpm_configured=False,
     )
     assert "10" in summary  # total / candidates
     assert "7" in summary  # newly enriched
     assert "3" in summary  # still missed
-    assert "GetSongBPM" in summary  # nudge present
-
-
-def test_run_summary_no_nudge_when_getsongbpm_configured():
-    summary = run_summary(
-        total=10,
-        candidates=10,
-        newly_enriched=10,
-        still_missed=0,
-        skipped={"local_files": 0, "episodes_or_other": 0, "duplicates": 0},
-        getsongbpm_configured=True,
-    )
-    assert "GetSongBPM" not in summary
 
 
 def test_plan_run_force_all_enriches_everything():

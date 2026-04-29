@@ -146,7 +146,7 @@ def test_feature_means_only_aggregates_reccobeats_rows():
     rows = [
         _row(source="reccobeats", energy="0.8", danceability="0.6"),
         _row(source="reccobeats", energy="0.6", danceability="0.4"),
-        _row(source="getsongbpm", energy="", danceability=""),
+        _row(source="manual", energy="", danceability=""),
         _row(source="miss:reccobeats", energy="", danceability=""),
     ]
     result = feature_means(rows)

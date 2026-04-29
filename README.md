@@ -15,7 +15,7 @@ A personal music-production learning system for Destin — a long-running, taste
 - **`scripts/`** — local CLI tools (Spotify pull, audio enrichment, librosa analysis, etc.).
 - **`curriculum.md`** — living lesson plan; Claude updates it at the end of every session.
 
-Secrets live outside this repo at `C:\Users\desti\.crunchtronics-tutor-secrets\` (Spotify OAuth, GetSongBPM API key, etc.).
+Secrets live outside this repo at `C:\Users\desti\.crunchtronics-tutor-secrets\` (Spotify OAuth, etc.).
 
 ## How to run a session
 

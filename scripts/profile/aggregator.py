@@ -97,9 +97,9 @@ def key_split(rows: list[dict]) -> dict[str, int]:
 def feature_means(rows: list[dict]) -> dict[str, Optional[float]]:
     """Mean of each numeric audio feature over `source = reccobeats` rows only.
 
-    GetSongBPM rows leave audio-feature columns empty (#6 spec §3.4.1), so a
-    mixed average would be misleading. Returns None per metric when no
-    reccobeats rows are present.
+    Other source values (`manual`, `miss:*`) leave audio-feature columns
+    empty or partial (#6 spec §3.4.1), so a mixed average would be
+    misleading. Returns None per metric when no reccobeats rows are present.
     """
     reccobeats_rows = [r for r in rows if r.get("source") == "reccobeats"]
     out: dict[str, Optional[float]] = {}

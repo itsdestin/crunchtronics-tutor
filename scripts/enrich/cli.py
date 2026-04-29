@@ -1,10 +1,9 @@
-"""Orchestrator: TTL retry decision, fallback chain, summary."""
+"""Orchestrator: TTL retry decision, ReccoBeats fetch, summary."""
 
 from __future__ import annotations
 
 import argparse
 import datetime as dt
-import json
 import sys
 import time
 from pathlib import Path
@@ -14,7 +13,6 @@ from dateutil import parser as date_parser
 
 from enrich.camelot import camelot_from_int_key, key_standard_from_int
 from enrich.csv_writer import CSV_COLUMNS, EnrichedRow, read_existing, write_atomic
-from enrich.getsongbpm import fetch as fetch_getsongbpm
 from enrich.models import EnrichmentResult
 from enrich.playlists_loader import TrackRecord, load_and_dedupe
 from enrich.reccobeats import ReccoBeatsRateLimited, fetch as fetch_reccobeats
@@ -22,7 +20,6 @@ from enrich.reccobeats import ReccoBeatsRateLimited, fetch as fetch_reccobeats
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PLAYLISTS_PATH = PROJECT_ROOT / "taste" / "playlists.json"
 TRACKS_CSV_PATH = PROJECT_ROOT / "taste" / "tracks.csv"
-SECRETS_PATH = Path.home() / ".crunchtronics-tutor-secrets" / "audio-enrichment.json"
 
 MISS_TTL_DAYS = 30
 THROTTLE_SECONDS = 1.0
@@ -126,31 +123,18 @@ def _to_enriched_row(
     )
 
 
-def _enrich_one(
-    track: TrackRecord, now: dt.datetime, getsongbpm_key: Optional[str]
-) -> EnrichedRow:
-    """Run the fallback chain for one track and return an EnrichedRow.
+def _enrich_one(track: TrackRecord, now: dt.datetime) -> EnrichedRow:
+    """Fetch one track from ReccoBeats and return an EnrichedRow.
 
     Raises:
         ReccoBeatsRateLimited: ReccoBeats returned 429. Propagated to the
             caller (main()) so the run can stop cleanly with partial
             progress preserved.
     """
-    # ReccoBeats first
     recco = fetch_reccobeats(track.spotify_id)
     if recco is not None:
         return _to_enriched_row(track, recco, source="reccobeats", now=now)
-
-    # GetSongBPM fallback (only if configured)
-    if getsongbpm_key:
-        gsb = fetch_getsongbpm(track.artist, track.title, api_key=getsongbpm_key)
-        if gsb is not None:
-            return _to_enriched_row(track, gsb, source="getsongbpm", now=now)
-        miss_source = "miss:reccobeats,getsongbpm"
-    else:
-        miss_source = "miss:reccobeats"
-
-    return _to_enriched_row(track, result=None, source=miss_source, now=now)
+    return _to_enriched_row(track, result=None, source="miss:reccobeats", now=now)
 
 
 def run_summary(
@@ -160,7 +144,6 @@ def run_summary(
     newly_enriched: int,
     still_missed: int,
     skipped: dict[str, int],
-    getsongbpm_configured: bool,
 ) -> str:
     """Render the end-of-run summary.
 
@@ -180,29 +163,13 @@ def run_summary(
             f"{skipped['episodes_or_other']} episodes/other, "
             f"{skipped['duplicates']} duplicates."
         )
-    if still_missed > 0 and not getsongbpm_configured:
-        lines.append(
-            f"\n{still_missed} tracks unenriched. Set up GetSongBPM as a fallback to "
-            f"fill more rows. Walkthrough in scripts/README.md (#GetSongBPM-setup)."
-        )
     return "\n".join(lines)
-
-
-def _load_getsongbpm_key() -> Optional[str]:
-    if not SECRETS_PATH.exists():
-        return None
-    try:
-        data = json.loads(SECRETS_PATH.read_text(encoding="utf-8"))
-        key = data.get("getsongbpm_api_key", "").strip()
-        return key or None
-    except (json.JSONDecodeError, OSError):
-        return None
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="enrich",
-        description="Enrich taste/tracks.csv from taste/playlists.json (ReccoBeats primary, GetSongBPM fallback).",
+        description="Enrich taste/tracks.csv from taste/playlists.json via ReccoBeats.",
     )
     p.add_argument("--retry-misses", action="store_true",
                    help="Skip the 30-day TTL; retry every row with source=miss:*.")
@@ -256,14 +223,13 @@ def main(argv: Optional[list[str]] = None) -> int:
             print(f"  ... and {len(plan) - 20} more")
         return 0
 
-    getsongbpm_key = _load_getsongbpm_key()
     newly_enriched = 0
 
     # Merge: existing + new. Re-enriched rows override existing entries.
     final: dict[str, EnrichedRow] = dict(existing)
     for track in plan:
         try:
-            row = _enrich_one(track, now=now, getsongbpm_key=getsongbpm_key)
+            row = _enrich_one(track, now=now)
         except ReccoBeatsRateLimited as e:
             print(
                 f"\nReccoBeats rate-limited (Retry-After {e.retry_after_s}s). "
@@ -272,7 +238,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             )
             break
         final[track.spotify_id] = row
-        if row.source in ("reccobeats", "getsongbpm"):
+        if row.source == "reccobeats":
             newly_enriched += 1
         time.sleep(THROTTLE_SECONDS)
 
@@ -289,7 +255,6 @@ def main(argv: Optional[list[str]] = None) -> int:
             newly_enriched=newly_enriched,
             still_missed=still_missed,
             skipped=skipped,
-            getsongbpm_configured=bool(getsongbpm_key),
         )
     )
     return 0

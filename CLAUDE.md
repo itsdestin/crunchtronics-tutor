@@ -90,16 +90,14 @@ Incremental by default — only fetches missing rows + retries misses
 older than 30 days. Flags: `--retry-misses`, `--force-all`, `--dry-run`,
 `--limit N`. Full docs in `scripts/README.md`.
 
-Primary service: **ReccoBeats** (no API key needed). Fallback:
-**GetSongBPM** (key in
-`C:\Users\desti\.crunchtronics-tutor-secrets\audio-enrichment.json` —
-optional, see `scripts/README.md` for the setup walkthrough). If
-unenriched count > 0 and GetSongBPM isn't configured, the script's
-end-of-run summary will recommend setting it up; relay that summary
-verbatim to Destin.
+Service: **ReccoBeats** (no API key needed). Tracks ReccoBeats has no
+entry for are recorded as `source=miss:reccobeats` and not retried for
+30 days. (A v1.0 GetSongBPM fallback was specified and integrated, then
+removed in v1.2 — see subsystem #6 §2.1 for the post-mortem.)
 
 This subsystem overrides master spec §11 #2 (was: GetSongBPM primary)
-and §7.2 (extends the column list with eight audio-feature columns).
+and §7.2 (extends the column list with seven audio-feature columns
+plus the `artists` column).
 See `docs/superpowers/specs/subsystems/06-audio-enrichment.md` §2.
 
 ## Taste profile

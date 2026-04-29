@@ -8,9 +8,8 @@ from typing import Optional
 class EnrichmentResult:
     """One backend's response for a single track.
 
-    All fields are optional. ReccoBeats populates everything; GetSongBPM
-    populates only bpm + key_int + mode. Returned as None from the
-    backend on a miss; the caller handles fallback.
+    All fields are optional; ReccoBeats populates them all. Returned as
+    None from the backend on a miss.
     """
 
     bpm: Optional[float] = None

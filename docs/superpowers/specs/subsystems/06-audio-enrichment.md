@@ -3,7 +3,7 @@
 - **Date:** 2026-04-26
 - **Status:** Shipped 2026-04-26 (Session C; plan at `docs/superpowers/plans/2026-04-26-session-c-data-pull.md`; first real run produced 73.2% ReccoBeats coverage on the EDM playlist)
 - **Master spec:** `docs/superpowers/specs/2026-04-26-master-architecture.md`
-- **Master-spec sections referenced:** §3.1 (Spotify deprecation context — the reason this subsystem exists), §5.1 #6 (one-liner contract), §6 (data flow), §7.2 (`taste/tracks.csv` shape — **extended** by this spec; see §2), §8 (refresh cadence: incremental, rate-limit aware), §11 default decision #2 (GetSongBPM as primary — **overridden** by this spec; see §2)
+- **Master-spec sections referenced:** §3.1 (Spotify deprecation context — the reason this subsystem exists), §5.1 #6 (one-liner contract), §6 (data flow), §7.2 (`taste/tracks.csv` shape — **extended** by this spec; see §2), §8 (refresh cadence: incremental, rate-limit aware), §11 default decision #2 (enrichment service — **overridden** by this spec; see §2)
 - **Companion spec:** `docs/superpowers/specs/subsystems/05-spotify-integration.md` (this subsystem's input producer)
 - **Session:** C (combined with #5)
 - **Build order:** Second subsystem in Session C; depends on #5 having produced a populated `taste/playlists.json`
@@ -22,13 +22,14 @@ Reads `taste/playlists.json`, deduplicates tracks, queries third-party services 
 
 This subsystem overrides two default decisions from the master spec:
 
-### 2.1 Override of §11 #2 — Primary enrichment service
+### 2.1 Override of §11 #2 — Enrichment service
 
 - **Original default:** GetSongBPM as primary.
-- **Overridden to:** **ReccoBeats** as primary, **GetSongBPM** as fallback.
-- **Reason:** ReccoBeats requires no API key, looks up by Spotify track ID (exact, no fuzzy artist+title matching), returns the Spotify-style audio-features vector (not just BPM + key), and has no attribution / backlink terms of use. GetSongBPM requires email registration plus a public backlink to its site as a free-API condition — the tutor is local-only with no public surface. The `source` column from §7.2 is the swap mechanism: a future service change can be added without disturbing already-enriched rows.
+- **Overridden to:** **ReccoBeats** is the sole enrichment service.
+- **Reason:** ReccoBeats requires no API key, looks up by Spotify track ID (exact, no fuzzy artist+title matching), returns the Spotify-style audio-features vector (not just BPM + key), and has no attribution / backlink terms of use. The `source` column from §7.2 is the swap mechanism: a future service change can be added without disturbing already-enriched rows.
 - **Architectural enabler:** `taste/playlists.json` from Subsystem #5 contains Spotify track IDs verbatim. ReccoBeats accepts these IDs as input.
 - **API shape (verified against the live API on 2026-04-26 by Task 2.2):** ReccoBeats requires a **two-step lookup** — single-track ID-resolution doesn't accept Spotify IDs at the audio-features endpoint. Step 1: `GET /v1/track?ids=<spotify_id_csv>` resolves Spotify IDs to ReccoBeats internal UUIDs, returning a `content[]` array of `{id: <uuid>, href: <spotify_url>, isrc, ...}` for tracks they have (empty array for unknown IDs — this is also the "not in DB" signal, NOT an HTTP 404). Step 2: `GET /v1/track/<uuid>/audio-features` returns the audio-features payload using the UUID from step 1. The single-track client function (`fetch(spotify_id)`) hides this two-step pattern behind one call; the orchestrator's per-track loop is unchanged.
+- **v1.2 revision (2026-04-29):** GetSongBPM was originally specified as a fallback. After integration, two findings led to its removal: (a) GetSongBPM's API now sits behind a Cloudflare managed-challenge gate that rejects all non-browser HTTP clients (verified across User-Agent rotation, curl_cffi Chrome120 TLS impersonation, Origin/Referer spoofing, and cloudscraper); (b) when fetched via Playwright + stealth as a workaround, the per-track hit rate on this catalog was 1/42 — GetSongBPM's database is light on niche/newer EDM. The cost of maintaining a Playwright-backed fallback was poor for the marginal coverage. The fallback path, the GetSongBPM client module, the secrets file slot, and the public-backlink obligation are all removed. A `manual` source value remains documented in §3.4.1 to record any data point the maintainer chooses to enter by hand.
 
 ### 2.2 Override of §7.2 — `tracks.csv` schema extension
 
@@ -65,10 +66,8 @@ taste/playlists.json (raw Spotify shape, written by plugin)
 [6] For each needs-enrichment row:
       a. Try ReccoBeats by Spotify track ID
       b. On 200 → row source="reccobeats" (full audio-features vector)
-      c. On 404 → try GetSongBPM by artist+title (only if API key present)
-            On hit → row source="getsongbpm" (BPM + key only; audio-feature columns left empty)
-            On miss / no key → row source="miss:reccobeats" or "miss:reccobeats,getsongbpm"
-      d. Honor 429 Retry-After; client-side throttle ~1 req/sec per service
+      c. On empty content (not in DB) → row source="miss:reccobeats"
+      d. Honor 429 Retry-After; client-side throttle ~1 req/sec
 [7] Merge into taste/tracks.csv. tracks.csv is CUMULATIVE: existing rows are
     preserved even if their source playlist is no longer in the current
     playlists.json (which can happen since #5 pulls are selective and the
@@ -76,7 +75,6 @@ taste/playlists.json (raw Spotify shape, written by plugin)
     from scratch.
 [8] Print end-of-run summary:
       - X tracks total / Y newly enriched / Z still missed
-      - If Z > 0 and getsongbpm not configured → nudge to set up GetSongBPM
 ```
 
 ### 3.4 `taste/tracks.csv` schema (extended per §2.2)
@@ -101,7 +99,7 @@ Field semantics:
 - `duration_s` — integer seconds, computed from the Spotify `duration_ms`.
 - `bpm` — float, tempo in beats per minute. Two decimals.
 - `key_camelot` — string in Camelot notation (e.g., `8B`, `12A`). Computed from `key_standard` via the lookup in §3.7.
-- `key_standard` — string like `C major`, `F# minor`. Derived from ReccoBeats `key` (0–11) + `mode` (0/1) or from GetSongBPM's reported key.
+- `key_standard` — string like `C major`, `F# minor`. Derived from ReccoBeats `key` (0–11) + `mode` (0/1).
 - `mode` — integer 0 (minor) or 1 (major). From ReccoBeats only.
 - `energy`, `danceability`, `valence`, `acousticness`, `instrumentalness`, `liveness`, `speechiness` — floats in `[0, 1]`. From ReccoBeats only.
 - `loudness` — float in dB (typically `-60` to `0`). From ReccoBeats only.
@@ -118,13 +116,12 @@ Track-metadata columns (`spotify_id`, `isrc`, `artist`, `artists`, `title`, `alb
 | Value | Meaning | Audio-feature columns populated |
 |---|---|---|
 | `reccobeats` | ReccoBeats returned a hit. | All of them (full audio-features vector). |
-| `getsongbpm` | ReccoBeats missed; GetSongBPM returned a hit. | Only `bpm`, `key_camelot`, `key_standard`. The rest stay empty (GetSongBPM doesn't provide them). |
-| `miss:reccobeats` | ReccoBeats missed; GetSongBPM not configured (no API key). | None. |
-| `miss:reccobeats,getsongbpm` | Tried both services; both 404. | None. |
+| `manual` | A maintainer entered values by hand (rare). | Whatever the maintainer filled in — typically `bpm`, `key_camelot`, `key_standard`, `mode`. |
+| `miss:reccobeats` | ReccoBeats had no entry for this Spotify ID. | None. |
 
-A reader can disambiguate empty cells by inspecting `source`: empty audio-feature cells in a `source = reccobeats` row would be a bug; empty cells in `source = getsongbpm` rows are expected (service didn't have those fields); empty cells in `miss:*` rows mean no service had data.
+A reader can disambiguate empty cells by inspecting `source`: empty audio-feature cells in a `source = reccobeats` row would be a bug; empty cells in `source = manual` rows mean the maintainer didn't fill them in; empty cells in `miss:*` rows mean no service had data.
 
-Future services can extend the value space (e.g., `last.fm`, `acousticbrainz`, `manual`) without schema changes.
+Future services can extend the value space (e.g., `last.fm`, `acousticbrainz`) without schema changes.
 
 ### 3.5 CLI flags
 
@@ -173,40 +170,28 @@ scripts/
 ├── enrich/
 │   ├── __init__.py
 │   ├── reccobeats.py      # ReccoBeats client (one function: enrich(spotify_id) -> EnrichmentResult | None)
-│   ├── getsongbpm.py      # GetSongBPM client (one function: enrich(artist, title) -> EnrichmentResult | None)
 │   ├── camelot.py         # 24-entry lookup
 │   ├── playlists_loader.py  # parse playlists.json → list of deduped TrackRecord
 │   └── csv_writer.py      # incremental tracks.csv merge logic
-├── README.md              # how to run; secrets layout; troubleshooting; GetSongBPM setup walkthrough
+├── README.md              # how to run; troubleshooting
 ├── pyproject.toml         # uv-managed: requests, python-dateutil; dev: pytest
 └── .python-version        # 3.12
 ```
 
-**Service-client interface contract:** every backend module exposes one function returning a uniform `EnrichmentResult | None` dataclass (with all audio-feature fields as `Optional[float]`). Returns `None` on miss; raises a service-specific exception on transient errors (caller handles 429 retry, exponential backoff). Adding a third service later = one more file + one more entry in the fallback chain in `enrich.py`.
+**Service-client interface contract:** the backend module exposes one function returning a uniform `EnrichmentResult | None` dataclass (with all audio-feature fields as `Optional[float]`). Returns `None` on miss; raises a service-specific exception on transient errors (caller handles 429 retry, exponential backoff). Adding a second service later = one more file + a fallback branch in `cli.py`.
 
 ### 3.9 Error handling
 
 | Failure | Behavior |
 |---|---|
-| ReccoBeats 404 | Expected. Falls through to GetSongBPM (if configured) or recorded as miss. |
+| ReccoBeats empty content (track not in DB) | Expected. Recorded as `miss:reccobeats`. |
 | ReccoBeats 429 | Honor `Retry-After` header; back off and retry once. If second 429, surface a clear error and stop the run (better to resume tomorrow than burn the IP). |
 | ReccoBeats 5xx / network | Exponential backoff: 3 attempts at 1s, 4s, 16s; then surface and stop. |
-| GetSongBPM (any failure) | Same posture as ReccoBeats. Missing API key = silent skip + summary nudge. |
 | `playlists.json` missing | Clear error: "Run /pull-spotify-data first (or ask me to pull it)." Exit non-zero. |
 | `tracks.csv` malformed | Back up to `tracks.csv.corrupt-<UTC-timestamp>`, write fresh from `playlists.json`. Log the backup path. |
-| Both services down (no rows enriched) | Stop the run cleanly; don't write a partial csv that drops rows. |
+| ReccoBeats sustained outage | Stop the run cleanly; don't write a partial csv that drops rows. |
 
-### 3.10 `audio-enrichment.json` shape
-
-```json
-{
-  "getsongbpm_api_key": "..."
-}
-```
-
-ReccoBeats requires no key, so it doesn't appear here. The script reads this file if present; if missing or `getsongbpm_api_key` is absent/empty, GetSongBPM is silently skipped and the end-of-run summary nudges to set it up.
-
-### 3.11 `CLAUDE.md` edits (the #6 section)
+### 3.10 `CLAUDE.md` edits (the #6 section)
 
 ```markdown
 ## Audio enrichment
@@ -217,12 +202,7 @@ summary verbatim.
 The script reads `taste/playlists.json` and writes `taste/tracks.csv`.
 Incremental by default — only fetches missing rows + retries misses
 older than 30 days. Flags: `--retry-misses`, `--force-all`, `--dry-run`,
-`--limit N`.
-
-Primary service: ReccoBeats (no API key). Fallback: GetSongBPM (key in
-`C:\Users\desti\.crunchtronics-tutor-secrets\audio-enrichment.json` —
-optional). If unenriched count > 0 and GetSongBPM isn't configured,
-recommend setting it up; instructions are in `scripts/README.md`.
+`--limit N`. Service: ReccoBeats only (no API key required).
 ```
 
 ## 4. What this subsystem must NOT do
@@ -232,9 +212,8 @@ recommend setting it up; instructions are in `scripts/README.md`.
 - **No writing of `taste/profile.md`.** That's Subsystem #7.
 - **No `/schedule` entry.** Pulls and enrichment are on-demand only (mirrors §5's override of master spec §11 #12).
 - **No use of Spotify's `audio-features` or `audio-analysis` endpoints** (deprecated for new apps per master spec §3.1; will return 403). All audio characterization comes from the third-party services.
-- **No embedding of API keys in code.** GetSongBPM key is read from `C:\Users\desti\.crunchtronics-tutor-secrets\audio-enrichment.json`. ReccoBeats requires no key.
+- **No embedding of API keys in code.** ReccoBeats requires no key, so this subsystem holds no secrets at all.
 - **No fabricated data.** When a service has no result, the row's audio-feature cells stay empty and `source` records the miss. Do not interpolate, guess, or pull from a different track.
-- **No batching across services.** Each track tries ReccoBeats first; only ReccoBeats misses fall through to GetSongBPM. Don't fire both in parallel.
 - **No silent overwrites.** A row already populated with `source=reccobeats` is not re-enriched unless `--force-all` is passed.
 
 ## 5. Verification gate
@@ -247,16 +226,15 @@ Before declaring this subsystem complete:
 - [ ] Re-running `enrich.py` immediately after a successful run is a no-op (incremental behavior verified).
 - [ ] Re-running with `--retry-misses` attempts only `miss:*` rows.
 - [ ] Camelot column populated correctly for at least 5 sampled rows (manual check against a reference table).
-- [ ] `scripts/README.md` documents: how to run; the GetSongBPM signup walkthrough (with explicit note about the backlink ToS); troubleshooting for common errors.
-- [ ] `CLAUDE.md` has the §3.11 section added.
-- [ ] `audio-enrichment.json` is documented (in `scripts/README.md` and the secrets-dir `README.txt`) but its real key value is left to Destin to fill if/when he wants the fallback active.
+- [ ] `scripts/README.md` documents: how to run; troubleshooting for common errors.
+- [ ] `CLAUDE.md` has the §3.10 section added.
 
 ## 6. Implementation notes
 
 - **Python environment.** Sets the `scripts/` Python convention for the tutor repo; Subsystem #8 (Teardown Pipeline) will reuse the same venv. Use `uv` for environment management to match the `spotify-services` plugin's precedent.
 - **Local files / podcasts in playlists.** Spotify allows users to add local-file uploads (no `id`) and podcast / episode items (`type != "track"`) to playlists. The dedupe step skips these silently and reports the count in the end-of-run summary so Destin sees they exist but understands they can't be enriched.
 - **ReccoBeats track-ID format.** ReccoBeats accepts both its own UUID-based IDs and Spotify Base-62 IDs. We always use the Spotify ID — no extra lookup hop.
-- **Genre column for v1.** Empty. A follow-up improvement could fill it from Spotify's `Get Artist` endpoint (returns artist-level genres), called via the `spotify-services` plugin. Adding this is a non-disruptive single-column backfill — it doesn't require re-running ReccoBeats / GetSongBPM. Defer until Subsystem #7 explicitly needs it.
+- **Genre column for v1.** Empty. A follow-up improvement could fill it from Spotify's `Get Artist` endpoint (returns artist-level genres), called via the `spotify-services` plugin. Adding this is a non-disruptive single-column backfill — it doesn't require re-running ReccoBeats. Defer until Subsystem #7 explicitly needs it.
 - **Rate-limit posture.** ReccoBeats publishes no numeric rate limit but returns 429 on overage. We default to a polite ~1 req/sec client-side throttle. If a real run reveals headroom, dial up.
 - **Test fixture.** Commit a small `scripts/tests/fixtures/playlists-mini.json` (5 tracks: 4 known-popular hits, 1 deliberately obscure) for fast unit / mocked-integration tests. The real-API smoke test uses the same fixture but with `SPOTIFY_E2E=1`.
 - **CSV writing posture.** Use the stdlib `csv` module — quoting set to QUOTE_MINIMAL, line terminator forced to `\n`. No pandas dependency for v1; the dataset stays small enough that pandas is overhead.
