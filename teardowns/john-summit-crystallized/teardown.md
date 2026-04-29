@@ -1,68 +1,81 @@
 ---
 slug: john-summit-crystallized
-generated_at: 2026-04-29T08:05:00Z
-source: https://www.youtube.com/watch?v=vo8SyrrTtsY
+generated_at: 2026-04-29T20:45:00Z
+source: local (source.wav)
 duration: 3:37
-tempo: 129.2 BPM (librosa) / 128.049 BPM (csv) — agree (within 4 BPM)
-key: 4A — F minor (librosa) / 3B — Db major (csv) — DISAGREE
+tempo: 128.049 BPM (csv) — 129.199 BPM (librosa). agree_within_4bpm: true.
+key: 3B — Db major (csv) — librosa reads 4A — F minor. agree: false.
 genre_inferred: tech-house
 genre_page: knowledge/genres/tech-house.md
 artist_page: knowledge/artists/john-summit.md
+sidechain: 4.49 dB ducking on 65.3% of kicks (detected) — depth_db_p90: 8.54 dB
 ---
 
-# John Summit — crystallized (feat. Inéz) — teardown
+# crystallized (feat. Inéz) — teardown
 
 ## TL;DR
 
-"crystallized" runs at ~128 BPM (csv: 128.049, librosa: 129.2 — within 4 BPM, both in the tech-house pocket defined in `knowledge/genres/tech-house.md`). The key shows a librosa/csv disagreement: librosa reads 4A (F minor) while the Spotify/ReccoBeats enrichment says 3B (Db major) — these are adjacent on the Camelot wheel (F minor is the relative minor of Ab major, while Db major is 3B; the Krumhansl-Schmuckler algorithm tends to bias toward relative minor when the chroma energy is ambiguous, so the csv value of 3B is the more reliable DJ-context value). Structure follows the classic 32-bar tech-house club arrangement: sparse intro building through 40 seconds, a hard Drop A, a dip and break around 1:52, then a full Drop B from 2:45 carrying through to the fade. The single defining production move is the **vocal-formant lead**: Inéz's vocal is not just a hook — it is the melodic anchor for both drops, processed with long-tail reverb and doubled an octave up, leaving every other element subservient to the voice.
+BPM 128.049 (csv); librosa reads 129.2 — agree within 4 BPM, csv is authoritative. Key 3B / Db major (csv); librosa reads 4A / F minor — a classic Krumhansl-Schmuckler bias toward the relative minor (F minor and Db major are adjacent on the Camelot wheel, 4A vs 3B). Valence 0.292 (csv): darker mood. Energy 0.857 (csv): high-energy. Danceability 0.529 (csv). Instrumentalness 4.85e-05 (csv): vocals or melodic samples are clearly present in the mix; per edm.com coverage ([edm.com](https://edm.com/music-releases/john-summit-inez-crystallized/), accessed 2026-04-29), Inéz is the credited featured vocalist. Sidechain detected: 4.49 dB average ducking on 65.3% of kick onsets; p90 depth 8.54 dB (per analysis.json). The HPSS panel shows a clear four-section structure: a ~42-second intro where percussive RMS climbs from 0.016 to 0.084 while sub-band RMS holds below 4, followed by Drop A (sub RMS jumping 14× to ~53–67), a break where sub onsets fall to 0/bar and percussive HPSS drops to 0.032–0.087, then Drop B restoring full-density levels.
 
 ## Sections
 
-### 0:00 — 0:40 — Intro
+### 0:00 — 0:42 — Intro
 
-Sparse opening: the kick enters almost immediately but sits very low in the mix, with a light percussion loop and no bass or vocal. Energy rises slowly as elements layer in — you can see the RMS curve climbing steadily from near-zero to roughly 0.23 by 0:35. The arrangement is deliberately stripped so the drop feels like an arrival rather than a continuation.
+Sub-band and bass-band per-panel values remain very low across bars 0–22: sub-band RMS mean per bar ranges 0.6–3.7 (vs. 40–65 in the drops), bass-band 12–22. Onset density confirms: sub onsets are 0/bar through bar 22, bass onsets 0–4/bar. Harmonic HPSS component climbs from ~0.078 at bar 0 to ~0.154 at bar 16; percussive HPSS rises from ~0.016 to ~0.081 over the same span — harmonic content is dominant throughout this section. Spectral centroid rises from ~836 Hz at bar 0 to ~2,695 Hz at bar 16, then peaks at ~3,271 Hz at bar 22 (Panel 4), indicating progressively brighter mid-high content building through the intro phase. Air-band RMS is near zero through bar 14 and begins a gradual increase from bar 16 onward.
 
-- **0:08** — The four-on-the-floor kick enters alone, completely dry, no reverb tail — deliberately "small" to leave room for the drop to feel enormous.
-- **0:25** — A rising synth texture (the "build shimmer") enters underneath, signalling the first energy ramp toward the drop. Listen for how it sits in the high-frequency band without competing with the kick.
+- 0:08 (bar 3) — bass-band RMS first reaches 13.6; low-mids RMS at 6.8. Sub-band remains under 1.0. Per Panel 2 (per-band RMS).
+- 0:29 (bar 16) — spectral centroid crosses 2,695 Hz. Percussive HPSS component reaches 0.081 — first significant percussive reading in the intro. Per Panels 3 and 4.
+- 0:39 (bar 21) — onset density: air-band onsets reach 10/bar, highs 5/bar — highest air-band onset count before the drop. Sub still 0. Per Panel 5 (onset density heatmap).
 
-### 0:40 — 1:52 — Drop A
+### 0:42 — 1:42 — Drop A
 
-The main drop. Energy spikes sharply at 0:40 (RMS from ~0.23 up to 0.50+). All elements arrive simultaneously: kick, rolling sub bass with sidechain pumping, percussion loop, and the vocal hook. The drop holds for approximately 64 bars (about 1:52 at 128 BPM) with one internal "air pocket" around 1:13 where non-kick elements thin briefly before surging back.
+Sub-band RMS jumps abruptly at bar 24 (~0:45): from ~3.7 (bar 22, last intro bar) to 53.2 — a 14× increase. Bass-band similarly climbs from ~18.8 to 67.4. Total RMS crosses 0.400. Percussive HPSS component holds between 0.106 and 0.145 across the drop; harmonic RMS simultaneously rises to 0.280–0.345, keeping the harmonic/percussive ratio roughly 2.1:1 (Panel 3). Onset density stabilizes: sub onsets hold at 7–13/bar, bass onsets 5–9/bar through bars 23–53. Spectral centroid settles at approximately 2,400–2,730 Hz — somewhat lower than the late-intro peak of 3,271 Hz, consistent with sub and bass energy shifting the spectral center of mass downward (Panel 4). Sidechain activity is most pronounced here: with sub and bass-band fully engaged and four-on-the-floor kick activity (genre prior — tech-house.md), the 4.49 dB mean ducking and 8.54 dB p90 depth (analysis.json) are driven primarily in this section.
 
-- **0:40** — Full drop arrival. The kick-bass sidechain pumping locks in immediately — bass ducks on every kick hit, then swells in the gaps, producing the signature "breathing" feel of the genre. See `knowledge/genres/tech-house.md` for the routing technique.
-- **0:48** — Inéz's vocal lead enters. Notice it sits in a reverb wash that's noticeably longer than the bass's attack — the lead "floats" while the low end punches. The vocal is doubled an octave up (a Summit signature per `knowledge/artists/john-summit.md`).
-- **1:13** — Brief "air pocket": non-kick percussion pulls back for ~4 bars, the bass filter sweeps slightly, then the full arrangement returns. This is a 16-bar micro-tension technique — keeps the drop from going stale at the 32-bar mark.
-- **1:35** — Percussion layers add back a congas/shaker loop overtop the existing groove, thickening the drop density in the back half.
+- 0:42 (bar 23) — sub-band onset count: 4/bar; bass-band onsets: 7/bar. First bar where both sub and bass onset density exceed 3. Per Panel 5.
+- 0:45 (bar 24) — sub-band RMS: 53.2; bass-band RMS: 67.4. Sharpest single-bar sub climb across the full track. Per Panel 2.
+- 1:15 (bar 40) — highest total per-bar onset density in Drop A: 51 onsets/bar across all bands (sub: 13, bass: 8, low-mids: 9, highs: 10, air: 11). Per Panel 5.
+- 1:26 (bar 46) — sub-band RMS: 56.6 (near-peak for Drop A). Total RMS: 0.414 — highest total RMS mean bar in Drop A. Per Panels 1 and 2.
 
-### 1:52 — 2:45 — Break
+### 1:42 — 2:48 — Break
 
-Energy drops sharply at 1:52 (RMS from ~0.52 to ~0.18). Kick is stripped out. What remains: the vocal reverb tail, a pad or atmospheric texture, and a very sparse hat pattern. The chroma panel shows harmonic content staying consistent with the 3B/4A tonal centre throughout. The break lasts approximately 32–48 bars (53 seconds at 128 BPM ≈ ~56 bars), long by pop standards but normal for a DJ-oriented club track.
+Sub-band and bass-band RMS collapse starting at bar 54 (~1:42): sub drops from 31.7 (bar 52) to 18.5 (bar 54) to 5.8 (bar 56), then holds near-zero to oscillating-low through bar 89. Bass-band follows: 48.9 (bar 52) → 31.8 (bar 54) → 20.3 (bar 56) → ~17–26 for the break mid-section. Sub onset density falls from 9/bar (bar 53) to 0/bar (bars 56–59) and stays at 0–3 through bar 90. Percussive HPSS drops sharply: bars 60–62 show values of 0.032–0.063, the lowest sustained percussive readings outside the very beginning of the track (Panel 3 — the magenta curve visibly flattens in the break period). Harmonic HPSS component holds at 0.167–0.238 across bars 60–90 — mid-register harmonic content sustains while percussive content is reduced. Low-mids RMS remains elevated at 11–14 throughout the break — mid-range spectral activity continues even as the low end is stripped. At bars 90–92, sub and percussive RMS show brief spikes as the track prepares the return.
 
-- **1:52** — Kick drops out simultaneously with the bass — the room gets very large. This is the "void" technique: the sudden absence of low end creates perceived silence even though hi-freq elements are still playing.
-- **2:20** — A riser/build element enters, likely a filtered noise sweep rising in pitch. Energy begins climbing from ~0.16 back toward 0.44 by 2:45. This is the "tension re-load" that sets up Drop B.
-- **2:42** — A short drum fill or snare roll cues the listener that the drop is 2-4 bars away.
+- 1:42 (bar 54) — sub-band onset density falls to 5/bar (from 9 the prior bar). Total RMS drops from 0.330 to 0.255. Per Panels 2 and 5.
+- 1:53 (bar 57) — sub onset density: 0/bar. Percussive HPSS: 0.087. Harmonic HPSS: 0.162. Harmonic/percussive ratio widens to ~1.9:1. Per Panel 3.
+- 2:44 (bar 90) — total RMS at its lowest sustained reading in the break: 0.099. Sub-band RMS 11.5, bass-band only 3.3 — most stripped-back moment in the track. Per Panel 2.
+- 2:45 (bar 91) — onset density returns: sub 3/bar, low-mids 5/bar, highs 3/bar, air 3/bar. Percussive HPSS rises from ~0.005 (bar 90) to 0.034. Pre-drop energy accumulation begins. Per Panels 3 and 5.
 
-### 2:45 — 3:32 — Drop B
+### 2:48 — 3:32 — Drop B
 
-The second drop, slightly denser than Drop A. Energy at 2:45 returns to Drop A levels (~0.41–0.45 RMS) and holds there. The arrangement is nearly identical to Drop A but may carry additional percussion or a subtle variation on the vocal processing. At this length (~47 seconds = ~50 bars at 128 BPM) it runs slightly shorter than Drop A — appropriate for a track intended to close a DJ set transition rather than be looped indefinitely.
+Sub-band and bass-band RMS return to drop-level values at bar 93 (~2:48): sub 60.1, bass 56.3, total RMS 0.371 — comparable to Drop A peak levels. Onset density immediately restores: sub 10/bar, bass 8/bar, low-mids 11/bar at bar 93. Across bars 93–114, sub onsets average 9–13/bar, total onsets 35–47/bar. Harmonic HPSS settles at 0.289–0.315 and percussive HPSS holds 0.119–0.138 — the harmonic/percussive ratio in Drop B (~2.3:1) is slightly higher than Drop A's ~2.1:1, indicating a marginally more harmonic-heavy balance (Panel 3). Spectral centroid holds at 2,437–2,739 Hz — similar brightness range to Drop A. Low-mids RMS tracks 9–11 — slightly lower than Drop A's 10–13. At bar 114 (~3:30) total RMS begins a sudden collapse; bar 115 shows sub = 0, bass = 0, total RMS = 0.018. Full stop at ~3:32.
 
-- **2:45** — Drop B arrival. Kick, bass, and vocal all re-enter simultaneously with no build-up — the riser handled all the tension, so the drop lands as a clean cut-in.
-- **3:05** — The vocal hook feels slightly "wetter" here (longer reverb pre-delay audible on the "crys-" syllable onset), suggesting a subtle automation move on the reverb return level.
-- **3:20** — Elements start dropping out one by one — percussion loop first, then bass filter closing — setting up the outro.
-
-### 3:32 — 3:37 — Outro
-
-Five-second hard fade. RMS drops from ~0.38 to near-zero. At 3:37 total this is the streaming-edit version of the track, not the DJ-extended version (which would have a 32-bar outro for mixing). The outro here is effectively just a tail cut — no new arrangement content.
-
-- **3:32** — Abrupt volume automation cut (or a very short fade) — consistent with a streaming master trim that removes the DJ-length outro.
+- 2:48 (bar 93) — sub-band RMS: 60.1. Onset density: 47 total/bar. Sharpest single-bar onset re-entry in the track outside the original drop. Per Panels 2 and 5.
+- 3:07 (bar 101) — highest onset count in Drop B: 47 total/bar (sub: 13, low-mids: 10, highs: 8, air: 9). Per Panel 5.
+- 3:30 (bar 114) — final full-density bar: sub 40.5, bass 54.3, onset total 36. Per Panel 2.
+- 3:32 (bar 115) — total RMS: 0.018; sub and bass onsets both 0. Full stop. Per Panels 1 and 2.
 
 ## Production techniques worth copying
 
-- **Sidechain kick-bass pumping:** the defining move of the genre. Every time the kick hits, a Compressor on the bass track (with sidechain input set to the kick) pulls the bass down 3–6 dB, then lets it swell back up. The result is the "breathing" low end that makes the track move. See `knowledge/genres/tech-house.md` — the "Read this yourself" section covers the Ableton routing step by step.
-- **Vocal-as-lead-hook with long-tail reverb:** Inéz's vocal sits in a reverb tail roughly 3–4× longer than the groove's beat gap, which makes it "float" above the punchy low end rather than competing with it. See `knowledge/ableton/the-mixer.md` — use the send-and-return pattern (Return A = Reverb) so the vocal reverb is on a separate return track you can dial up and down independently of the dry vocal.
-- **Sparse drop arrangement (load-bearing six-element rule):** at any moment in the drop, count the active elements — kick, bass, hat, clap, percussion loop, vocal hook. That's six. Nothing else. This "less = more" discipline is described in `knowledge/genres/tech-house.md` under "Read this yourself."
+- **Sidechain compression.** Measured 4.49 dB average bass-band ducking on 65.3% of kick onsets; p90 depth 8.54 dB (per analysis.json). Reference: `knowledge/genres/tech-house.md` sidechain section for the Ableton Compressor routing and typical 3–6 dB target range.
+
+- **Sub/bass withheld for 42 seconds.** The entire intro (0:00–0:42) maintains sub-band RMS below 4 and sub onset density of 0/bar. The drop's sub entry at bar 23 delivers a 14× sub-band RMS increase. The contrast is unusually large and is visible in Panel 2 as a near-flat sub trace that jumps to dominant. Withholding is the technique; the drop is the reward.
+
+- **Percussive/harmonic ratio control across sections.** Panel 3 (HPSS) shows three clearly distinct percussive-RMS regimes: intro (rising 0.016→0.084), break (dropping to 0.032–0.087), drops (sustaining 0.106–0.151). Managing the HPSS balance — not just overall RMS — is what creates structural contrast without relying on element-by-element arrangement notation.
+
+- **Spectral brightening through the intro.** Centroid climbs from ~836 Hz at bar 0 to ~3,271 Hz at bar 22 (Panel 4) — roughly a 4× increase over 42 seconds. On drop entry, centroid drops back to ~2,500 Hz as sub energy shifts the spectral center of mass. Centroid automation as a structural cue.
+
+- **Sustained mid-range through the break.** Low-mids RMS (250–2k Hz) holds at 11–14 through the break even as sub-band collapses. Per Panel 2: the break does not go quiet — it shifts the spectral weight upward while sub content is removed.
 
 ## Listen-for next time
 
-- **The kick-bass gap:** pause the track at 0:44 and listen to exactly where the bass note sits in time relative to the kick. The bass plays *in the gap* between kicks, not on the kick itself. That interlock is why the low end sounds tight instead of muddy.
-- **The 1:13 air pocket:** listen to how the track "breathes" here without fully breaking down. The kick never leaves — only the other elements thin. Notice how much tension one 4-bar percussion pull-back creates compared to removing the kick entirely.
+- The sub-band onset density transition at ~0:42 (bar 23): sub onsets go from 0 to 4/bar in one bar. Listen for what triggers that change in the low end.
+- The p90 sidechain depth of 8.54 dB: there will be individual kicks where the pumping is nearly twice the average. Listen for those heavy downbeat moments.
+- Lyric: "I loved you once, fire to ice / All of my teardrops, they all crystallized" (per [lyricsondemand.com](https://lyricsondemand.com/john_summit/crystallized), accessed 2026-04-29). The harmonic HPSS in the break (0.167–0.238) with low-mids sustained — listen for how the mid-range content carries during the break while the low end is absent.
+- The centroid drop from ~3,093 Hz (bar 20, late intro) to ~2,664 Hz (bar 24, early drop). Brightness actually decreases slightly when sub arrives. Listen for that tonal-weight shift.
+
+## Web-finding citations
+
+- Per release coverage ([edm.com](https://edm.com/music-releases/john-summit-inez-crystallized/), accessed 2026-04-29): Inéz is the credited featured vocalist; reunion collaboration following their earlier "light years."
+- Per lyrics site ([lyricsondemand.com](https://lyricsondemand.com/john_summit/crystallized), accessed 2026-04-29): confirmed lyric "I loved you once, fire to ice / All of my teardrops, they all crystallized."
+- Per release announcement ([preludepress.com](https://preludepress.com/news/2025/09/11/john-summit-crystallized/), accessed 2026-04-29): confirmed release date September 11, 2025, on Experts Only label.
+- Per Beatport listing ([beatport.com](https://www.beatport.com/track/crystallized-feat-inez/22095332), accessed 2026-04-29): track released on Experts Only label; house/tech-house genre classification consistent with csv and artist profile.

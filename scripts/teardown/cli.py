@@ -88,7 +88,7 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"ERROR: --local path does not exist: {local_path}", file=sys.stderr)
                 return 6
             print(f"[1/4] using local file {local_path}")
-            if not source_path.exists() or args.force:
+            if (not source_path.exists() or args.force) and local_path != source_path:
                 import shutil
                 shutil.copy(local_path, source_path)
             source_url = ""
