@@ -61,3 +61,30 @@ class TestValidateSlug:
 
     def test_rejects_too_long(self):
         assert validate_slug("a" * 81) is False
+
+
+class TestRoundTrip:
+    def test_every_derived_slug_validates(self):
+        cases = [
+            ("John Summit", "Where You Are"),
+            ("John Summit & HAYLA", "Where You Are"),
+            ("Subtronics", "Griztronics II"),
+            ("Łaszewo", "Café"),
+            ("---weird---", "name"),
+            ("-leading", "trailing-"),
+            ("ARTIST", "TITLE"),
+            ("A & B", "song"),
+        ]
+        for artist, title in cases:
+            slug = derive_slug(artist, title)
+            assert validate_slug(slug), f"derive_slug({artist!r}, {title!r}) → {slug!r} is invalid"
+
+
+class TestDeriveSlugErrors:
+    def test_raises_on_empty_inputs(self):
+        with pytest.raises(ValueError, match="Cannot derive slug"):
+            derive_slug("", "")
+
+    def test_raises_on_all_punctuation(self):
+        with pytest.raises(ValueError, match="Cannot derive slug"):
+            derive_slug("!!!", "???")

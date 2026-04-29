@@ -8,7 +8,6 @@ import unicodedata
 
 _SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,79}$")
 _NON_ALNUM_RE = re.compile(r"[^a-z0-9]+")
-_REPEATED_DASH_RE = re.compile(r"-+")
 
 # Transliteration map for characters that don't decompose via NFD/NFKD.
 _TRANSLITERATION_MAP = {
@@ -36,9 +35,10 @@ def derive_slug(artist: str, title: str) -> str:
 
     lowered = normalized.lower()
     dashed = _NON_ALNUM_RE.sub("-", lowered)
-    collapsed = _REPEATED_DASH_RE.sub("-", dashed)
-    stripped = collapsed.strip("-")
+    stripped = dashed.strip("-")
     truncated = stripped[:80].rstrip("-")
+    if not truncated:
+        raise ValueError(f"Cannot derive slug from artist={artist!r}, title={title!r}")
     return truncated
 
 
