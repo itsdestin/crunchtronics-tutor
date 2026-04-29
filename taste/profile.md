@@ -1,7 +1,7 @@
 ---
-generated_at: 2026-04-29T00:00:00Z
+generated_at: 2026-04-29T22:30:00Z
 row_count: 157
-enriched_count: 115
+enriched_count: 116
 top_artists_at_generation: [GRiZ, Disco Lines, BUNT., Subtronics, Zeds Dead]
 profile_anchors: [bass-house, dubstep, melodic-dubstep, tech-house]
 ---
@@ -10,7 +10,7 @@ profile_anchors: [bass-house, dubstep, melodic-dubstep, tech-house]
 
 ## TL;DR
 
-157 tracks pulled from one playlist ("EDM"); 115 enriched with audio features, 42 still unenriched (`miss:reccobeats`). The library is energetic dance music (mean energy 0.80, mean valence 0.32 — dark/driving rather than sunny) split across two tempo centers: a 128–138 BPM cluster (bass house / electro house) and a 144–150 BPM cluster (dubstep / bass house drops), with a smaller 124–128 tech-house pocket on top.
+157 tracks pulled from one playlist ("EDM"); 116 enriched with audio features, 41 unenriched (`miss:reccobeats,getsongbpm`). The library is energetic dance music (mean energy 0.80, mean valence 0.32 — dark/driving rather than sunny) split across two tempo centers: a 128–138 BPM cluster (bass house / electro house) and a 144–150 BPM cluster (dubstep / bass house drops), with a smaller 124–128 tech-house pocket on top.
 
 **Counting note (v1.1, 2026-04-29):** top-artist counts now credit every artist on multi-artist tracks, not just the primary. 88 of 157 tracks have multi-artist credits — a single-credit count was systematically under-counting collaborators (notably Wooli, Excision, ILLENIUM, who are anchor-genre artists primarily appearing as co-credits).
 
@@ -22,7 +22,7 @@ profile_anchors: [bass-house, dubstep, melodic-dubstep, tech-house]
 - **128–138 BPM:** 27 tracks (bass house / electro house — the dominant cluster)
 - **138–142 BPM:** 13 tracks (trap / hybrid / future-bass adjacent)
 - **144–150 BPM:** 17 tracks (dubstep / bass house drops — Subtronics / Zeds Dead territory)
-- **150–160 BPM:** 7 tracks (drum-and-bass-adjacent)
+- **150–160 BPM:** 8 tracks (drum-and-bass-adjacent)
 - **other:** 26 tracks (outside the main buckets, plus `<100` and `>=160`)
 
 ## Key bias
@@ -35,7 +35,7 @@ Top Camelot keys, translated to standard notation:
 - **10A — B minor:** 7 tracks
 - **6A — G minor:** 7 tracks
 
-Mode split: 59 major, 56 minor, 42 unknown (the unknowns are the 42 `miss:reccobeats` rows that have no key data). Among rows that *do* have key data, major and minor are nearly balanced (51%/49%) — no strong tonal lean.
+Mode split: 59 major, 57 minor, 41 unknown (the unknowns are the 41 `miss:reccobeats,getsongbpm` rows that have no key data — neither service had data for them). Among rows that *do* have key data, major and minor are nearly balanced (51%/49%) — no strong tonal lean.
 
 ## Top artists & subgenres
 
