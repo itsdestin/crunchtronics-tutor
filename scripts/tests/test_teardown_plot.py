@@ -21,9 +21,8 @@ def test_scrub_strip_writes_png(tmp_path, teardown_fixture_wav):
 
 
 def test_scrub_strip_falls_back_to_per_panel_pngs(tmp_path, teardown_fixture_wav, monkeypatch):
-    """When the multi-axis path fails, render each panel separately."""
+    """When the multi-axis path fails, render each of the 6 panels separately."""
     import teardown.plot as plot_mod
-    original = plot_mod._render_combined
 
     def boom(*args, **kwargs):
         raise RuntimeError("simulated multi-axis failure")
@@ -37,7 +36,7 @@ def test_scrub_strip_falls_back_to_per_panel_pngs(tmp_path, teardown_fixture_wav
         out_dir=tmp_path,
     )
 
-    expected = [tmp_path / f"scrub-strip-{i}.png" for i in (1, 2, 3, 4)]
+    expected = [tmp_path / f"scrub-strip-{i}.png" for i in (1, 2, 3, 4, 5, 6)]
     for p in expected:
         assert p.exists(), f"expected fallback panel {p} missing"
     assert paths == expected
