@@ -63,12 +63,10 @@ def _fetch_features(uuid: str) -> EnrichmentResult:
     response.raise_for_status()
     payload = response.json()
     # Field names verified against the live API on 2026-04-26.
-    # time_signature is not in ReccoBeats' response — left None.
     return EnrichmentResult(
         bpm=payload.get("tempo"),
         key_int=payload.get("key"),
         mode=payload.get("mode"),
-        time_signature=None,
         energy=payload.get("energy"),
         danceability=payload.get("danceability"),
         valence=payload.get("valence"),

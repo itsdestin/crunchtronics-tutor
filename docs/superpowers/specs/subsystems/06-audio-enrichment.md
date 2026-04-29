@@ -33,7 +33,8 @@ This subsystem overrides two default decisions from the master spec:
 ### 2.2 Override of §7.2 — `tracks.csv` schema extension
 
 - **Original column list:** `spotify_id, isrc, artist, title, album, duration_s, bpm, key_camelot, key_standard, energy, danceability, genre, source, fetched_at`.
-- **Extended to:** original columns plus eight new audio-feature columns (`mode`, `time_signature`, `valence`, `acousticness`, `instrumentalness`, `liveness`, `loudness`, `speechiness`). See §3.4 for the full ordered schema.
+- **Extended to:** original columns plus seven new audio-feature columns (`mode`, `valence`, `acousticness`, `instrumentalness`, `liveness`, `loudness`, `speechiness`) and one new credit column (`artists`). See §3.4 for the full ordered schema.
+- **v1.1 revision (2026-04-29):** `time_signature` was dropped (always empty — ReccoBeats does not return it and no second backend filled it). `artists` was added (semicolon-delimited full-credit list) after a data audit showed 56% of pulled tracks had multi-artist credits and the original "primary only" rule mis-classified anchor artists. The `artist` column is retained as the primary credit.
 - **Reason:** ReccoBeats returns the full vector for free in every response; capturing it now is cheap, and skipping it would force a re-enrichment of every track later when Subsystem #7 (Taste Profile) wants richer signal. Master spec §7.2 explicitly permits downstream subsystems to extend the column list.
 
 When the master spec is next revised, both overrides should be reflected (or kept as the documented v1 defaults with this subsystem documenting the deviations).
@@ -83,8 +84,8 @@ taste/playlists.json (raw Spotify shape, written by plugin)
 Column order — fixed:
 
 ```
-spotify_id, isrc, artist, title, album, duration_s,
-bpm, key_camelot, key_standard, mode, time_signature,
+spotify_id, isrc, artist, artists, title, album, duration_s,
+bpm, key_camelot, key_standard, mode,
 energy, danceability, valence, acousticness, instrumentalness,
 liveness, loudness, speechiness,
 genre, source, fetched_at
@@ -94,14 +95,14 @@ Field semantics:
 
 - `spotify_id` — Spotify track ID (Base-62). Always present (the dedup key).
 - `isrc` — International Standard Recording Code, copied from the Spotify track payload when present. Empty if absent.
-- `artist` — primary artist name (first artist in the Spotify track payload). Composite tracks (feat., remixes) keep just the primary.
+- `artist` — primary artist name (first artist in the Spotify track payload). Retained for use as a stable filename/slug seed (teardowns) and as a "lead credit" reference; consumers that need full credits read `artists`.
+- `artists` — semicolon-delimited list of all credited artist names from the Spotify track payload, in payload order. Includes the primary. Example: `Subtronics;Wooli`. This is the source of truth for credit-counting (top-artist aggregation, artist-page eligibility). Master spec §7.2 explicitly permits column extension; this column was added in v1.1 (2026-04-29) after a data audit found 56% of pulled tracks had multi-artist credits and counting only the primary mis-classified anchor artists (e.g., Wooli).
 - `title`, `album` — strings copied from the Spotify track payload.
 - `duration_s` — integer seconds, computed from the Spotify `duration_ms`.
 - `bpm` — float, tempo in beats per minute. Two decimals.
 - `key_camelot` — string in Camelot notation (e.g., `8B`, `12A`). Computed from `key_standard` via the lookup in §3.7.
 - `key_standard` — string like `C major`, `F# minor`. Derived from ReccoBeats `key` (0–11) + `mode` (0/1) or from GetSongBPM's reported key.
 - `mode` — integer 0 (minor) or 1 (major). From ReccoBeats only.
-- `time_signature` — integer (3, 4, 5, …). **Always empty in v1** — ReccoBeats does not include this field in its audio-features response (verified 2026-04-26). Reserved for a future backend that does (e.g., a local librosa pass during teardowns).
 - `energy`, `danceability`, `valence`, `acousticness`, `instrumentalness`, `liveness`, `speechiness` — floats in `[0, 1]`. From ReccoBeats only.
 - `loudness` — float in dB (typically `-60` to `0`). From ReccoBeats only.
 - `genre` — string. **Empty for v1** — neither service provides it. See §6 for a follow-up note on filling this column from Spotify's artist-genres endpoint or last.fm in a future iteration.
@@ -112,7 +113,7 @@ Empty cells are valid (per master spec §7.2: "enrichment is best-effort").
 
 #### 3.4.1 `source` column value semantics
 
-Track-metadata columns (`spotify_id`, `isrc`, `artist`, `title`, `album`, `duration_s`) and bookkeeping columns (`source`, `fetched_at`) are populated on **every** row, sourced from `taste/playlists.json`. The audio-feature columns (`bpm`, `key_*`, `mode`, `time_signature`, `energy`, …, `speechiness`) vary by `source`:
+Track-metadata columns (`spotify_id`, `isrc`, `artist`, `artists`, `title`, `album`, `duration_s`) and bookkeeping columns (`source`, `fetched_at`) are populated on **every** row, sourced from `taste/playlists.json`. The audio-feature columns (`bpm`, `key_*`, `mode`, `energy`, …, `speechiness`) vary by `source`:
 
 | Value | Meaning | Audio-feature columns populated |
 |---|---|---|

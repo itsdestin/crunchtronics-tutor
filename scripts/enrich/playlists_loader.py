@@ -15,6 +15,7 @@ class TrackRecord:
     spotify_id: str
     isrc: str
     artist: str
+    artists: str
     title: str
     album: str
     duration_s: int
@@ -48,13 +49,16 @@ def load_and_dedupe(path: Path) -> tuple[list[TrackRecord], dict[str, int]]:
                 skipped["duplicates"] += 1
                 continue
             seen.add(spotify_id)
-            artists = item.get("artists", [])
-            primary_artist = artists[0]["name"] if artists else ""
+            artist_objs = item.get("artists", [])
+            artist_names = [a["name"] for a in artist_objs]
+            primary_artist = artist_names[0] if artist_names else ""
+            artists_joined = ";".join(artist_names)
             records.append(
                 TrackRecord(
                     spotify_id=spotify_id,
                     isrc=item.get("external_ids", {}).get("isrc", ""),
                     artist=primary_artist,
+                    artists=artists_joined,
                     title=item.get("name", ""),
                     album=item.get("album", {}).get("name", ""),
                     duration_s=item.get("duration_ms", 0) // 1000,

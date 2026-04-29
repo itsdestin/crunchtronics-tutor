@@ -1,7 +1,7 @@
 ---
 slug: subtronics
 category: artists
-tldr: "Riddim / heavy-dubstep heavyweight (5 tracks) — named in `../genres/dubstep.md` as Destin's confirmed master-spec taste anchor for the genre; the Splice 'Angry Robot Noises' pack and an Ableton-native production approach make him an unusually accessible learning target."
+tldr: "Riddim / heavy-dubstep heavyweight (8 tracks under all-credits counting) — named in `../genres/dubstep.md` as Destin's confirmed master-spec taste anchor for the genre; the Splice 'Angry Robot Noises' pack and an Ableton-native production approach make him an unusually accessible learning target. 3 of 8 are co-credits with Wooli, GRiZ, and Rezz — he sits at the heavy-bass collaboration hub."
 prerequisites: [dubstep]
 references:
   - "Splice pack: https://splice.com/sounds/packs/splice/subtronics-pack"
@@ -13,22 +13,25 @@ next: wooli
 # Subtronics
 
 ## TL;DR
-Subtronics (Jesse Kardon) is named in `../genres/dubstep.md` as Destin's master-spec taste anchor for the dubstep genre, and the 5 tracks in this pull confirm it. He's the contemporary face of the riddim / heavy-dubstep crossover — repeating triplet bass patterns from riddim, dense sound design from heavy dubstep, and an unusual willingness to talk publicly about his Ableton workflow. That last detail makes him one of the most accessible study targets on Destin's leaderboard.
+Subtronics (Jesse Kardon) is named in `../genres/dubstep.md` as Destin's master-spec taste anchor for the dubstep genre, and the 8 tracks in this pull (under all-credits counting) confirm it. He's the contemporary face of the riddim / heavy-dubstep crossover — repeating triplet bass patterns from riddim, dense sound design from heavy dubstep, and an unusual willingness to talk publicly about his Ableton workflow. That last detail makes him one of the most accessible study targets on Destin's leaderboard. 3 of 8 tracks are co-credits (with Wooli, GRiZ, and Rezz), placing him at the heavy-bass collaboration hub.
 
 ## Cheat block
-- **BPM range:** 132.0-175.1 (mean 147.8). The 140 BPM cluster is core dubstep; the 175 outlier is likely a half-time-felt 87 BPM cut or a faster collab. The mean ~148 reflects modern bass-music tempo creep above the 140 anchor.
-- **Common keys:** 5A — C minor (1 track); 10A — B minor (1 track); 11A — F# minor (1 track). All minor — the genre default. C minor and B minor are heavyweight festival-set keys.
+- **BPM range:** 75.4-175.1 (mean ~141 across 7 enriched; 1 unenriched). The 140-147 cluster is core dubstep; 175 outliers are half-time-felt cuts ("Final Breath," the "Black Out Days" remix); 75.4 is "Griztronics" felt half-time over 150-151. The 131.96 ("Friends" with Linney) is the slower / more melodic end.
+- **Common keys:** 5A — C minor (1), 10A — B minor (2), 11A — F# minor (1), 9A — E minor (1), 11B — A major (1), 2B — F# major (1); 1 unenriched. Minor-leaning — genre default. C minor and B minor are heavyweight festival-set keys.
 - **Signature sound design:**
   - Bass: dense, mid-forward growls and "robot" textures with rapid wavetable modulation; layered over a heavy sub. Less reverberant and more aggressive than classic Skrillex-era dubstep.
   - Riddim influence shows in the rhythmic spine — repeating triplet bass patterns at 3 or 6 hits per beat, often dry and punchy, used as a structural element rather than a melodic one.
   - Drums: layered kicks (sub + click transient), heavily processed snares with reverb tails, sparse hat patterns with rolls into drops.
   - Sound design philosophy is "every sound is a blank canvas" — single-purpose patches, not preset libraries, designed to fit one specific moment in one specific track.
 - **Sample tracks from your library:**
-  - Lock In
+  - Lock In — with Wooli (the cleanest melodic-dubstep crossover example)
   - Infinity (feat. Grabbitz)
   - Final Breath
   - Friends (feat. Linney)
-  - Black Ice
+  - Black Ice — with Rezz
+  - Griztronics — with GRiZ
+  - Griztronics II (Another Level) — with GRiZ
+  - Black Out Days — Subtronics Remix (Phantogram original)
 
 ## Resources
 - **Splice "Sounds of Subtronics" pack:** **Subtronics Angry Robot Noises** — official Subtronics-branded pack, 274 tearout-dubstep samples + 25 Serum presets: https://splice.com/sounds/packs/splice/subtronics-pack

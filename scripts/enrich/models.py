@@ -16,7 +16,6 @@ class EnrichmentResult:
     bpm: Optional[float] = None
     key_int: Optional[int] = None  # 0..11 (Spotify-style)
     mode: Optional[int] = None  # 0 minor, 1 major
-    time_signature: Optional[int] = None
     energy: Optional[float] = None
     danceability: Optional[float] = None
     valence: Optional[float] = None

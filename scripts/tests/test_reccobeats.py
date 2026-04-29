@@ -57,7 +57,6 @@ def test_fetch_returns_audio_features_on_resolved_track():
     assert result.liveness == features["liveness"]
     assert result.loudness == features["loudness"]
     assert result.speechiness == features["speechiness"]
-    assert result.time_signature is None  # ReccoBeats doesn't return this
 
 
 @responses.activate

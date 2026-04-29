@@ -8,8 +8,8 @@ import pytest
 from teardown.csv_context import load_csv_context
 
 TRACKS_CSV_HEADER = [
-    "spotify_id", "isrc", "artist", "title", "album", "duration_s",
-    "bpm", "key_camelot", "key_standard", "mode", "time_signature",
+    "spotify_id", "isrc", "artist", "artists", "title", "album", "duration_s",
+    "bpm", "key_camelot", "key_standard", "mode",
     "energy", "danceability", "valence", "acousticness", "instrumentalness",
     "liveness", "loudness", "speechiness",
     "genre", "source", "fetched_at",

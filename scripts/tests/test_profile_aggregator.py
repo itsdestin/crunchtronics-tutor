@@ -18,6 +18,7 @@ def _row(**overrides):
         "spotify_id": "abc",
         "isrc": "US123",
         "artist": "Test Artist",
+        "artists": "Test Artist",
         "title": "Test Track",
         "album": "Test Album",
         "duration_s": "180",
@@ -25,7 +26,6 @@ def _row(**overrides):
         "key_camelot": "8A",
         "key_standard": "A minor",
         "mode": "0",
-        "time_signature": "",
         "energy": "0.8",
         "danceability": "0.5",
         "valence": "0.3",
@@ -44,12 +44,12 @@ def _row(**overrides):
 
 def test_top_artists_sorts_desc_by_count_then_alpha():
     rows = [
-        _row(artist="Bravo"),
-        _row(artist="Alpha"),
-        _row(artist="Alpha"),
-        _row(artist="Charlie"),
-        _row(artist="Bravo"),
-        _row(artist="Bravo"),
+        _row(artists="Bravo"),
+        _row(artists="Alpha"),
+        _row(artists="Alpha"),
+        _row(artists="Charlie"),
+        _row(artists="Bravo"),
+        _row(artists="Bravo"),
     ]
     result = top_artists(rows)
     assert result == [
@@ -57,6 +57,30 @@ def test_top_artists_sorts_desc_by_count_then_alpha():
         {"artist": "Alpha", "tracks": 2},
         {"artist": "Charlie", "tracks": 1},
     ]
+
+
+def test_top_artists_counts_every_credit_on_multi_artist_track():
+    """A track with two credited artists counts once for each."""
+    rows = [
+        _row(artists="Subtronics;Wooli"),
+        _row(artists="GRiZ;Wooli"),
+        _row(artists="Wooli"),
+    ]
+    result = top_artists(rows)
+    counts = {d["artist"]: d["tracks"] for d in result}
+    assert counts["Wooli"] == 3
+    assert counts["Subtronics"] == 1
+    assert counts["GRiZ"] == 1
+
+
+def test_top_artists_falls_back_to_artist_when_artists_missing():
+    """Legacy rows with only `artist` populated still aggregate correctly."""
+    rows = [
+        {"artist": "Solo", "artists": ""},
+        {"artist": "Solo", "artists": ""},
+    ]
+    result = top_artists(rows)
+    assert result == [{"artist": "Solo", "tracks": 2}]
 
 
 def test_top_artists_empty_input_returns_empty_list():

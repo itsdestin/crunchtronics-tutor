@@ -18,15 +18,15 @@ from enrich.playlists_loader import TrackRecord
 
 def _make_track(sid: str = "t1") -> TrackRecord:
     return TrackRecord(
-        spotify_id=sid, isrc="", artist="A", title="T",
+        spotify_id=sid, isrc="", artist="A", artists="A", title="T",
         album="Al", duration_s=200,
     )
 
 
 def _make_row(sid: str, source: str, fetched_at: str) -> EnrichedRow:
     return EnrichedRow(
-        spotify_id=sid, isrc="", artist="A", title="T", album="Al", duration_s=200,
-        bpm=None, key_camelot="", key_standard="", mode=None, time_signature=None,
+        spotify_id=sid, isrc="", artist="A", artists="A", title="T", album="Al", duration_s=200,
+        bpm=None, key_camelot="", key_standard="", mode=None,
         energy=None, danceability=None, valence=None, acousticness=None,
         instrumentalness=None, liveness=None, loudness=None, speechiness=None,
         genre="", source=source, fetched_at=fetched_at,

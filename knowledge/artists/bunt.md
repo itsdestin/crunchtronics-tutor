@@ -1,7 +1,7 @@
 ---
 slug: bunt
 category: artists
-tldr: "Berlin-based folktronica / melodic-house duo whose acoustic-guitar-driven dance music sits adjacent to melodic-dubstep on Destin's taste profile (9 tracks)."
+tldr: "Berlin-based folktronica / melodic-house duo whose acoustic-guitar-driven dance music sits adjacent to melodic-dubstep on Destin's taste profile (10 tracks under all-credits counting — includes the Zedd 'Clarity' BUNT. Remix)."
 prerequisites: [melodic-dubstep]
 references:
   - "Splice 'Sounds of BUNT.' pack: unverified — search inconclusive as of 2026-04-28"
@@ -13,7 +13,7 @@ next: disco-lines
 # BUNT.
 
 ## TL;DR
-BUNT. is a Berlin folktronica / melodic-house duo built on acoustic-guitar loops, banjo, hand-claps, foot-stomps and earnest "campfire" vocal hooks dropped into four-on-the-floor dance grooves. They aren't a clean fit for any existing cheat sheet in `knowledge/genres/` — folktronica / melodic-house is their primary inhabit — but melodic-dubstep is the closest lens because both share the "pretty-on-top, rhythmic-engine-underneath" structure. With 9 tracks in the pull, BUNT. is one of the top-five artists in Destin's library and the main "warm / organic" voice in an otherwise synthetic catalog.
+BUNT. is a Berlin folktronica / melodic-house duo built on acoustic-guitar loops, banjo, hand-claps, foot-stomps and earnest "campfire" vocal hooks dropped into four-on-the-floor dance grooves. They aren't a clean fit for any existing cheat sheet in `knowledge/genres/` — folktronica / melodic-house is their primary inhabit — but melodic-dubstep is the closest lens because both share the "pretty-on-top, rhythmic-engine-underneath" structure. With **10 tracks** in the pull (under all-credits counting; the +1 over the v1.0 count is the Zedd × VALORANT × Foxes "Clarity" BUNT. Remix, where they're the remix author), BUNT. is one of the top-three artists in Destin's library and the main "warm / organic" voice in an otherwise synthetic catalog.
 
 ## Cheat block
 - **BPM range:** 128.1-175.2 (mean 142.9). The cluster sits in two pockets: a 128-130 melodic-house pocket and a 140-150 hybrid pocket where they double-time the kick into faster drops.
@@ -25,10 +25,11 @@ BUNT. is a Berlin folktronica / melodic-house duo built on acoustic-guitar loops
   - Bass is supportive, not aggressive — usually a sub-sine following the root note, with sidechain to make space for the kick. The drops trade dubstep's growl for a wider, more musical low end.
 - **Sample tracks from your library:**
   - Lose It All (I Don't Wanna)
-  - Clouds
-  - TRIPPIN
-  - Lost My Mind (Wake Up)
-  - Peace In Silence
+  - Clouds — with Nate Traveller
+  - TRIPPIN — with Mapei
+  - Lost My Mind (Wake Up) — with Elley Duhé
+  - Peace In Silence — with Nate Traveller
+  - Clarity — BUNT. Remix (Zedd × VALORANT × Foxes original)
 
 ## Resources
 - **Splice "Sounds of BUNT." pack:** unverified — search inconclusive as of 2026-04-28

@@ -1,7 +1,7 @@
 ---
 slug: disco-lines
 category: artists
-tldr: "Top of Destin's leaderboard with 12 tracks — vocal-driven tech-house / disco-house with chopped hooks and a Fisher-adjacent club punch."
+tldr: "#2 on Destin's leaderboard with 13 tracks (under all-credits counting; +1 over v1.0 from the SIDEPIECE 'Give It To Me Good' co-credit) — vocal-driven tech-house / disco-house with chopped hooks and a Fisher-adjacent club punch."
 prerequisites: [tech-house]
 references:
   - "Interview: https://atwoodmagazine.com/dsln-disco-lines-interview-music-2023/"
@@ -13,7 +13,7 @@ next: griz
 # Disco Lines
 
 ## TL;DR
-Disco Lines (Connor Sterzinger) is the artist at the top of Destin's leaderboard with 12 tracks. He's a US-side disco-house / tech-house producer in the Fisher / Chris Lake lineage, but more vocal-forward and song-shaped: chopped vocal hooks, four-on-the-floor punch, and disco-leaning bass. If John Summit is Destin's "club at 1 AM" anchor, Disco Lines is the "festival mainstage at 4 PM" companion — same skeleton, looser feel.
+Disco Lines (Connor Sterzinger) is the **#2 artist on Destin's leaderboard with 13 tracks** under all-credits counting (the +1 over v1.0 is the SIDEPIECE × Disco Lines "Give It To Me Good" co-credit; GRiZ overtook him at #1 once GRiZ's collab credits were counted). He's a US-side disco-house / tech-house producer in the Fisher / Chris Lake lineage, but more vocal-forward and song-shaped: chopped vocal hooks, four-on-the-floor punch, and disco-leaning bass. If John Summit is Destin's "club at 1 AM" anchor, Disco Lines is the "festival mainstage at 4 PM" companion — same skeleton, looser feel.
 
 ## Cheat block
 - **BPM range:** 122.0-160.1 (mean 132.2). The bulk sits in the 124-128 tech-house pocket; the 160 outlier is likely a half-time-feel mix of a 80 BPM track or a remix at the high end.

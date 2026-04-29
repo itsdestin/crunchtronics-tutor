@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Final, Optional
 
 CSV_COLUMNS: Final[list[str]] = [
-    "spotify_id", "isrc", "artist", "title", "album", "duration_s",
-    "bpm", "key_camelot", "key_standard", "mode", "time_signature",
+    "spotify_id", "isrc", "artist", "artists", "title", "album", "duration_s",
+    "bpm", "key_camelot", "key_standard", "mode",
     "energy", "danceability", "valence", "acousticness", "instrumentalness",
     "liveness", "loudness", "speechiness",
     "genre", "source", "fetched_at",
@@ -20,6 +20,7 @@ class EnrichedRow:
     spotify_id: str
     isrc: str
     artist: str
+    artists: str
     title: str
     album: str
     duration_s: int
@@ -27,7 +28,6 @@ class EnrichedRow:
     key_camelot: str
     key_standard: str
     mode: Optional[int]
-    time_signature: Optional[int]
     energy: Optional[float]
     danceability: Optional[float]
     valence: Optional[float]
@@ -61,6 +61,7 @@ def _csv_dict_to_row(d: dict[str, str]) -> EnrichedRow:
         spotify_id=d["spotify_id"],
         isrc=d["isrc"],
         artist=d["artist"],
+        artists=d["artists"],
         title=d["title"],
         album=d["album"],
         duration_s=int(d["duration_s"]) if d["duration_s"] else 0,
@@ -68,7 +69,6 @@ def _csv_dict_to_row(d: dict[str, str]) -> EnrichedRow:
         key_camelot=d["key_camelot"],
         key_standard=d["key_standard"],
         mode=opt_int(d["mode"]),
-        time_signature=opt_int(d["time_signature"]),
         energy=opt_float(d["energy"]),
         danceability=opt_float(d["danceability"]),
         valence=opt_float(d["valence"]),

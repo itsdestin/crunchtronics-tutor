@@ -1,7 +1,7 @@
 ---
 slug: levity
 category: artists
-tldr: "Seattle-area dubstep / tearout producer (4 tracks, hand-picked by Destin) — sits in the heavy-dubstep neighborhood with strong sound-design fingerprints; closest existing genre cheat sheet is `../genres/dubstep.md`."
+tldr: "Seattle-area dubstep / tearout producer (5 tracks under all-credits counting; +1 over v1.0 from the ALLEYCVT 'ONE FOR YOU' co-credit) — sits in the heavy-dubstep neighborhood with strong sound-design fingerprints; closest existing genre cheat sheet is `../genres/dubstep.md`."
 prerequisites: [melodic-dubstep]
 references:
   - "Splice pack: https://splice.com/sounds/packs/splice/sounds-of-collapse"
@@ -13,7 +13,7 @@ next: nghtmre
 # Levity
 
 ## TL;DR
-Levity (stylized LEViT∆TE) is a Seattle-area dubstep / tearout producer hand-picked by Destin during the brainstorm. The 4 tracks in the pull skew heavy and tearout-flavored, with one notable mid-tempo outlier ("Postman" at 100 BPM) that points to genre flexibility. Closest genre cheat sheet is `../genres/dubstep.md`; melodic-dubstep is listed as the prereq because Destin's curriculum reaches it before crossing into heavy bass design.
+Levity (stylized LEViT∆TE) is a Seattle-area dubstep / tearout producer hand-picked by Destin during the brainstorm. **5 tracks** in the pull (under all-credits counting; the +1 over v1.0 is the ALLEYCVT × Levity "ONE FOR YOU" co-credit) skew heavy and tearout-flavored, with one notable mid-tempo outlier ("Postman" at 100 BPM) that points to genre flexibility. Closest genre cheat sheet is `../genres/dubstep.md`; melodic-dubstep is listed as the prereq because Destin's curriculum reaches it before crossing into heavy bass design.
 
 ## Cheat block
 - **BPM range:** 100.0-144.7 (mean 133.0). The 144.7 cluster is dubstep / tearout proper; the 100 BPM outlier ("Postman") is a half-time-felt mid-tempo cut.
@@ -24,10 +24,11 @@ Levity (stylized LEViT∆TE) is a Seattle-area dubstep / tearout producer hand-p
   - Drops are dense and busy — frequent bass-pattern flips every 2-4 bars, very few stretches of repetition.
   - Vocal chops appear as melodic pre-drop hooks rather than dominating the drop itself.
 - **Sample tracks from your library:**
-  - Flip It - Tape B Remix
-  - Rising Tides
+  - Flip It — Tape B Remix (with Tape B and Dem Jointz)
+  - Rising Tides — with Lhasa Petik
   - Postman
   - Moment
+  - ONE FOR YOU — with ALLEYCVT
 
 ## Resources
 - **Splice "Sounds of Levity" pack:** no exact-name pack, but Levity's own Splice release **LEViT∆TE: Sounds of Collapse (Tearout Dubstep)** is the closest official equivalent: https://splice.com/sounds/packs/splice/sounds-of-collapse

@@ -14,8 +14,8 @@ from enrich.csv_writer import (
 def test_csv_columns_match_spec():
     """The exact column order from spec §3.4."""
     expected = [
-        "spotify_id", "isrc", "artist", "title", "album", "duration_s",
-        "bpm", "key_camelot", "key_standard", "mode", "time_signature",
+        "spotify_id", "isrc", "artist", "artists", "title", "album", "duration_s",
+        "bpm", "key_camelot", "key_standard", "mode",
         "energy", "danceability", "valence", "acousticness", "instrumentalness",
         "liveness", "loudness", "speechiness",
         "genre", "source", "fetched_at",
@@ -29,6 +29,7 @@ def test_write_then_read_roundtrip(tmp_path: Path):
             spotify_id="track001",
             isrc="USRC1",
             artist="A",
+            artists="A;B",
             title="T",
             album="Al",
             duration_s=200,
@@ -36,7 +37,6 @@ def test_write_then_read_roundtrip(tmp_path: Path):
             key_camelot="8B",
             key_standard="C major",
             mode=1,
-            time_signature=4,
             energy=0.8,
             danceability=0.6,
             valence=0.5,
@@ -57,6 +57,7 @@ def test_write_then_read_roundtrip(tmp_path: Path):
     assert "track001" in read_back
     r = read_back["track001"]
     assert r.bpm == 128.0
+    assert r.artists == "A;B"
     assert r.source == "reccobeats"
     assert r.fetched_at == "2026-04-26T00:00:00Z"
 
@@ -69,8 +70,8 @@ def test_read_existing_returns_empty_for_missing_file(tmp_path: Path):
 def test_write_atomic_preserves_column_order(tmp_path: Path):
     rows = [
         EnrichedRow(
-            spotify_id="x", isrc="", artist="", title="", album="", duration_s=0,
-            bpm=None, key_camelot="", key_standard="", mode=None, time_signature=None,
+            spotify_id="x", isrc="", artist="", artists="", title="", album="", duration_s=0,
+            bpm=None, key_camelot="", key_standard="", mode=None,
             energy=None, danceability=None, valence=None, acousticness=None,
             instrumentalness=None, liveness=None, loudness=None, speechiness=None,
             genre="", source="miss:reccobeats", fetched_at="2026-04-26T00:00:00Z",

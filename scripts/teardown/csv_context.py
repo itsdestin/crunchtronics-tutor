@@ -6,8 +6,8 @@ from typing import Any, Optional
 
 _FLOAT_COLS = {"bpm", "energy", "danceability", "valence", "acousticness",
                "instrumentalness", "liveness", "loudness", "speechiness"}
-_INT_COLS = {"duration_s", "mode", "time_signature"}
-_STR_COLS = {"spotify_id", "isrc", "artist", "title", "album",
+_INT_COLS = {"duration_s", "mode"}
+_STR_COLS = {"spotify_id", "isrc", "artist", "artists", "title", "album",
              "key_camelot", "key_standard", "genre", "source", "fetched_at"}
 
 

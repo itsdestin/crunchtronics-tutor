@@ -32,8 +32,21 @@ _FEATURE_KEYS = (
 
 
 def top_artists(rows: list[dict]) -> list[dict]:
-    """Sort artists by track count desc, ties broken alphabetically."""
-    counts = Counter(r["artist"] for r in rows)
+    """Sort artists by track count desc, ties broken alphabetically.
+
+    Counts every credited artist on each track (splitting `artists` on `;`),
+    not just the primary. A track with two credited artists counts once for
+    each — mirrors how listeners experience a co-credited release. Falls
+    back to the `artist` column for legacy rows that predate the `artists`
+    column.
+    """
+    counts: Counter[str] = Counter()
+    for r in rows:
+        joined = r.get("artists", "") or r.get("artist", "")
+        for name in joined.split(";"):
+            name = name.strip()
+            if name:
+                counts[name] += 1
     return [
         {"artist": a, "tracks": n}
         for a, n in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))

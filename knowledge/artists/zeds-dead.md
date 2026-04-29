@@ -1,7 +1,7 @@
 ---
 slug: zeds-dead
 category: artists
-tldr: "Toronto bass-music duo (6 tracks) — DC and Hooks; helped define North American dubstep, now genre-fluid across bass music, downtempo, and hip-hop crossover; the 6 tracks here mostly come from the 'Return to the Spectrum of Intergalactic Happiness' album which is the exact subject of an in-depth MusicTech interview."
+tldr: "Toronto bass-music duo (7 tracks under all-credits counting; +1 over v1.0 from the Blue Foundation 'Eyes on Fire' Zeds Dead Remix) — DC and Hooks; helped define North American dubstep, now genre-fluid across bass music, downtempo, and hip-hop crossover; most tracks come from the 'Return to the Spectrum of Intergalactic Happiness' album which is the exact subject of an in-depth MusicTech interview."
 prerequisites: [dubstep]
 references:
   - "Splice pack: no known pack"
@@ -12,7 +12,7 @@ references:
 # Zeds Dead
 
 ## TL;DR
-Zeds Dead (DC and Hooks, Toronto) are one of the duos that helped define North American dubstep in the early 2010s. The 6 tracks in Destin's pull are striking: 4 of them come from the same album, *Return to the Spectrum of Intergalactic Happiness*, which means a single album-focused interview unlocks production context for most of the catalog Destin has saved. They're explicitly genre-fluid — the duo's stated approach is "we're never really going for a genre."
+Zeds Dead (DC and Hooks, Toronto) are one of the duos that helped define North American dubstep in the early 2010s. **7 tracks** in Destin's pull (under all-credits counting; the +1 over v1.0 is the Blue Foundation "Eyes on Fire" Zeds Dead Remix), 4 of which come from the same album, *Return to the Spectrum of Intergalactic Happiness*, which means a single album-focused interview unlocks production context for most of the catalog Destin has saved. They're explicitly genre-fluid — the duo's stated approach is "we're never really going for a genre."
 
 ## Cheat block
 - **BPM range:** 83.4-150.2 (mean 127.0). The wide spread reflects how genre-fluid the catalog is — downtempo / hip-hop crossover at 83-90, mid-tempo at 100-110, dubstep proper at 140-150. The mean ~127 sits in between, which is itself diagnostic: there's no single tempo center.
@@ -24,10 +24,12 @@ Zeds Dead (DC and Hooks, Toronto) are one of the duos that helped define North A
   - Drum kits blend programmed dubstep skeletons with live-feeling textures (room reverb, vinyl crackle, tape hiss) — similar in philosophy to GRiZ but with bass-music weight rather than funk-soul instrumentation.
 - **Sample tracks from your library:**
   - One Of These Mornings
-  - Ecstasy Of Soul
+  - Ecstasy Of Soul — with GRiZ
   - Fall Away
   - Sweet Memories
-  - Heartbeat
+  - Heartbeat — with Minke
+  - Think Of You — with Blunts & Blondes
+  - Eyes on Fire — Zeds Dead Remix (Blue Foundation original)
 
 ## Resources
 - **Splice "Sounds of Zeds Dead" pack:** **no known pack** (no official Zeds Dead-branded Splice pack as of 2026-04-28; only third-party "inspired by" packs)

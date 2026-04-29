@@ -1,16 +1,18 @@
 ---
-generated_at: 2026-04-28T23:23:31Z
+generated_at: 2026-04-29T00:00:00Z
 row_count: 157
 enriched_count: 115
-top_artists_at_generation: [Disco Lines, GRiZ, BUNT., jigitz, Zeds Dead]
+top_artists_at_generation: [GRiZ, Disco Lines, BUNT., Subtronics, Zeds Dead]
 profile_anchors: [bass-house, dubstep, melodic-dubstep, tech-house]
 ---
 
-# Destin's taste profile (auto-generated 2026-04-28)
+# Destin's taste profile (auto-generated 2026-04-29)
 
 ## TL;DR
 
 157 tracks pulled from one playlist ("EDM"); 115 enriched with audio features, 42 still unenriched (`miss:reccobeats`). The library is energetic dance music (mean energy 0.80, mean valence 0.32 — dark/driving rather than sunny) split across two tempo centers: a 128–138 BPM cluster (bass house / electro house) and a 144–150 BPM cluster (dubstep / bass house drops), with a smaller 124–128 tech-house pocket on top.
+
+**Counting note (v1.1, 2026-04-29):** top-artist counts now credit every artist on multi-artist tracks, not just the primary. 88 of 157 tracks have multi-artist credits — a single-credit count was systematically under-counting collaborators (notably Wooli, Excision, ILLENIUM, who are anchor-genre artists primarily appearing as co-credits).
 
 ## BPM clusters
 
@@ -37,21 +39,28 @@ Mode split: 59 major, 56 minor, 42 unknown (the unknowns are the 42 `miss:reccob
 
 ## Top artists & subgenres
 
-- **Disco Lines (12 tracks)** — vocal-driven tech-house / disco-house with chopped hooks
-- **GRiZ (11 tracks)** — funk/soul-leaning bass music, live-instrument electronic
-- **BUNT. (9 tracks)** — folktronica / melodic house with acoustic textures
+- **GRiZ (14 tracks)** — funk/soul-leaning bass music, live-instrument electronic; many tracks are co-credits with Subtronics or Wooli on the bass-music side
+- **Disco Lines (13 tracks)** — vocal-driven tech-house / disco-house with chopped hooks
+- **BUNT. (10 tracks)** — folktronica / melodic house with acoustic textures
+- **Subtronics (8 tracks)** — riddim / heavy dubstep (master-spec taste anchor); collabs heavily with Wooli and GRiZ
+- **Zeds Dead (7 tracks)** — dubstep / bass-music veterans, hybrid drops
 - **jigitz (7 tracks)** — bass house (master-spec taste anchor)
-- **Zeds Dead (6 tracks)** — dubstep / bass-music veterans, hybrid drops
+- **Wooli (6 tracks)** — melodic dubstep / hybrid drops (master-spec anchor); appears predominantly as a collaborator (5 of 6 are co-credits with Subtronics, GRiZ, Excision, Seven Lions, or ILLENIUM)
 - **Ian Asher (5 tracks)** — disco-house / mashup-style edits
 - **John Summit (5 tracks)** — tech house (master-spec taste anchor)
-- **Subtronics (5 tracks)** — riddim / heavy dubstep (master-spec taste anchor)
+- **Levity (5 tracks)** — melodic dubstep / future bass
 - **Łaszewo (5 tracks)** — indie-electronic / house with vocal lead
 - **ALLEYCVT (4 tracks)** — bass house / dubstep, vocal-forward
-- **Levity (4 tracks)** — melodic dubstep / future bass
+- **Excision (4 tracks)** — heavy dubstep / riddim; appears entirely as a collaborator (Wooli, ILLENIUM, Sullivan King, Gryffin)
+- **ILLENIUM (4 tracks)** — melodic dubstep / future bass; appears entirely as a collaborator or remix-target
 - **nimino (4 tracks)** — UK garage / liquid drum-and-bass adjacent
 
-Wooli (master-spec melodic-dubstep anchor) appears with only 1 track in the current pull — under-represented relative to the spec but kept as an anchor since the genre cluster is otherwise well-supported by Levity and Zeds Dead.
+The melodic-dubstep cluster (master-spec anchor) is now well-supported across **Wooli (6) + Levity (5) + ILLENIUM (4) + Zeds Dead (7) hybrid drops**. The previous profile under-counted this cluster because Wooli's collaborations all credited Subtronics or GRiZ as primary.
 
 ## Resources surface area
 
 Authored after artist pages land — see Tasks 1.8–1.21 of the Session D plan. Per Subsystem #7 §3.9, every external resource on an artist page must be web-search-verified at authoring time; this section will be populated from those verified findings (Splice "Sounds of" packs, preset packs, breakdown links) and not before.
+
+---
+
+*Audio-feature data from [getsongbpm.com](https://getsongbpm.com) (when GetSongBPM is configured) and ReccoBeats. The GetSongBPM attribution is included here as a free-API condition.*

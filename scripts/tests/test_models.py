@@ -8,7 +8,6 @@ def test_enrichment_result_defaults_to_all_none():
     assert r.bpm is None
     assert r.key_int is None
     assert r.mode is None
-    assert r.time_signature is None
     assert r.energy is None
     assert r.danceability is None
     assert r.valence is None
@@ -24,7 +23,6 @@ def test_enrichment_result_holds_full_vector():
         bpm=128.5,
         key_int=7,
         mode=1,
-        time_signature=4,
         energy=0.85,
         danceability=0.62,
         valence=0.42,
