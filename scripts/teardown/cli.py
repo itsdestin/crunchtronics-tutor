@@ -59,9 +59,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.check_deps:
         return run_check_deps()
 
-    if not _ffmpeg_available():
-        print("ERROR: ffmpeg not found on PATH. Install: winget install Gyan.FFmpeg",
-              file=sys.stderr)
+    if args.url and not _ffmpeg_available():
+        print("ERROR: ffmpeg not found on PATH (required for yt-dlp). "
+              "Install: winget install Gyan.FFmpeg", file=sys.stderr)
         return 6
 
     target_dir = TEARDOWNS_DIR / args.slug
