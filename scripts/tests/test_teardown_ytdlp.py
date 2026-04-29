@@ -50,7 +50,10 @@ def test_download_audio_invokes_yt_dlp_with_wav_extraction(monkeypatch, tmp_path
     download_audio("https://x", out_path, force=False)
 
     args = fake_run.call_args[0][0]
-    assert "yt-dlp" in args[0]
+    # Wrapper invokes via `python -m yt_dlp` so the module name appears as a
+    # standalone token in the arg list (and args[0] is the Python exe).
+    assert "yt_dlp" in args
+    assert "-m" in args
     assert "--extract-audio" in args
     assert "--audio-format" in args
     assert "wav" in args

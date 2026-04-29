@@ -3,8 +3,15 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+# Invoke yt_dlp via `python -m yt_dlp` so we always use the venv's yt_dlp module.
+# Calling the bare `yt-dlp` shim resolves to whichever yt-dlp.exe is first on
+# PATH — which on Windows can be a stale user-level install pointing at a
+# different Python that doesn't have yt_dlp installed.
+_YTDLP_CMD = [sys.executable, "-m", "yt_dlp"]
 
 
 class DownloadError(RuntimeError):
@@ -25,7 +32,7 @@ def resolve_search(query: str) -> SearchResult:
     URL-confirmation step.
     """
     cmd = [
-        "yt-dlp",
+        *_YTDLP_CMD,
         "--skip-download",
         "--print", "%(title)s|%(duration_string)s|%(channel)s",
         f"ytsearch1:{query}",
@@ -52,7 +59,7 @@ def download_audio(url: str, out_path: Path, *, force: bool) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     cmd = [
-        "yt-dlp",
+        *_YTDLP_CMD,
         "--extract-audio",
         "--audio-format", "wav",
         "--audio-quality", "0",
@@ -60,7 +67,7 @@ def download_audio(url: str, out_path: Path, *, force: bool) -> None:
         url,
     ]
     if force:
-        cmd.insert(1, "--force-overwrites")
+        cmd.insert(len(_YTDLP_CMD), "--force-overwrites")
 
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode != 0:
