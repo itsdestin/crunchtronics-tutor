@@ -6,6 +6,10 @@ requires-python = ">=3.12"
 dependencies = [
     "requests>=2.31",
     "python-dateutil>=2.9",
+    "librosa>=0.10.2",
+    "yt-dlp>=2024.1.0",
+    "matplotlib>=3.8",
+    "soundfile>=0.12",
 ]
 
 [project.optional-dependencies]

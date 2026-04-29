@@ -8,3 +8,10 @@ scripts/*.egg-info/
 *.log
 .DS_Store
 reference/*.pdf
+
+# Teardown source audio (large; reproducible from analysis.json.source.url)
+teardowns/**/source.wav
+teardowns/**/source.mp3
+teardowns/**/source.flac
+teardowns/**/source.m4a
+teardowns/**/source.opus
