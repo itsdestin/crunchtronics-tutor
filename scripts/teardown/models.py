@@ -1,12 +1,14 @@
 """Dataclasses for teardown pipeline results."""
 
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
 
 import numpy as np
 
 
-@dataclass(frozen=True)
+# eq=False because ndarray fields make auto-generated __eq__ raise.
+# AnalysisResult is produced and consumed in a pipeline; equality and
+# hashing aren't needed.
+@dataclass(frozen=True, eq=False)
 class AnalysisResult:
     duration_s: float
     sample_rate: int

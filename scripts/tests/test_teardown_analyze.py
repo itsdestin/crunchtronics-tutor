@@ -66,3 +66,9 @@ def test_analyze_short_audio_raises(tmp_path):
     sf.write(str(short_wav), np.zeros(22050 * 5), 22050)  # 5 seconds
     with pytest.raises(ValueError, match="suspiciously short"):
         analyze(short_wav)
+
+
+def test_analyze_beat_times_strictly_monotone(teardown_fixture_wav):
+    """plp + localmax should always return strictly-increasing beat positions."""
+    result = analyze(teardown_fixture_wav)
+    assert np.all(np.diff(result.beat_times_s) > 0)
