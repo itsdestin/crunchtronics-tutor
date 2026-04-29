@@ -1543,6 +1543,27 @@ git add docs/superpowers/plans/2026-04-28-session-d-personalization-curriculum.m
 git commit -m "test(curriculum): rehearse nudge mechanics on empty sessions/"
 ```
 
+**Rehearsal log (filled in 2026-04-28 during Task 2.3 execution):**
+
+- **Date of rehearsal:** 2026-04-28
+- **Sessions/ state:** empty (only `.gitkeep` present)
+- **Expected nudge fires:** yes (no log = stale per §3.8.1)
+- **Drafted nudge text (would-be first response):**
+  > Welcome back — it looks like this is your first session. You're on
+  > `lesson-001: MPK ↔ Ableton first connection`. Today's practice (~30 min):
+  > connect the MPK over USB, verify Ableton sees it under Preferences →
+  > Link/Tempo/MIDI, and play notes from the keys. Want to dive in, switch
+  > lessons, or just chat?
+- **No-nudge counter-case (thought experiment):** if `sessions/2026-04-28-first-session.md`
+  existed today, delta = 0 calendar days, threshold = 2, 0 < 2 → no nudge fires.
+  Behavior matches spec §3.8.1.
+- **Notes:** Mechanics traced cleanly with no surprises. The would-be nudge
+  is 4 sentences if the "Welcome back" preamble is counted separately —
+  spec §3.8.2 prescribes structure rather than literal sentence count, so
+  the 3-sentence rule maps to the three semantic units (lesson identity,
+  practice + time, redirect). Noted as a minor structural observation, not
+  a spec gap.
+
 ### Task 2.4: Phase 2 verification gate (#4)
 
 - [ ] **Step 1: Verify `curriculum.md` has the §3.3 schema**
