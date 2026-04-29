@@ -311,7 +311,7 @@ WORKFLOW
 - **Depends on:** Sessions B + C
 - **Parallel with:** none
 - **Estimated length:** 1 session + ongoing regeneration
-- **Status:** [ ] not started
+- **Status:** [x] complete (2026-04-28 — plan at `docs/superpowers/plans/2026-04-28-session-d-personalization-curriculum.md`; subsystems #7 + #4 shipped)
 
 **Hand-off prompt:**
 
@@ -378,9 +378,9 @@ WORKFLOW
 - After **#7 Taste Profile:** `taste/profile.md` exists with all suggested sections from §7.4; aggregation helper scripts present in `scripts/`; at least 3 `knowledge/artists/<slug>.md` pages authored for top artists with verified resource info.
 - After **#4 Curriculum & Nudges:** `curriculum.md` schema documented and seeded with at least 8 taste-aware lessons; `/schedule` entry exists for M/W/F nudges; sessions/ log convention documented in CLAUDE.md.
 
-- [ ] **Step 1:** Open fresh session, paste hand-off prompt, complete the cycle
-- [ ] **Step 2:** Both verification gates passed
-- [ ] **Step 3:** Mark session `[x]` — unblocks Session E
+- [x] **Step 1:** Open fresh session, paste hand-off prompt, complete the cycle
+- [x] **Step 2:** Both verification gates passed
+- [x] **Step 3:** Mark session `[x]` — unblocks Session E
 
 ---
 
