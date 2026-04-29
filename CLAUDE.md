@@ -148,3 +148,29 @@ if missing). Surface the changes to Destin and offer to revert.
 
 This subsystem overrides master spec §11 #4 and §8's nudge row — see
 `docs/superpowers/specs/subsystems/04-curriculum-and-nudges.md` §2.
+
+## Teardowns
+
+The teardown pipeline is invoked via the project-scoped `/teardown` skill
+at `.claude/skills/teardown/SKILL.md`. Both `/teardown <input>` and
+"teardown this track: <input>" route through the same flow. Inputs:
+YouTube URL, local file path, Spotify track ID, or free-text track name
+(fuzzy-matched against `taste/tracks.csv`).
+
+Per-teardown artifacts land in `teardowns/<slug>/`:
+- `source.wav` (gitignored) — yt-dlp output or manually-dropped file
+- `analysis.json` — librosa-derived numerical analysis
+- `scrub-strip.png` — 4-panel time-aligned visualization Claude reads
+- `teardown.md` — narrative ("what's happening when")
+- `recipe.md` — numbered build steps targeting Ableton Live 12 Lite
+
+Recipe rules: target the Lite floor (8 audio + 8 MIDI, Simpler-only,
+2 sends); include at least one `**Intro+ note:**` callout; reference
+`knowledge/artists/<slug>.md` for study materials only when the page
+exists (never fabricate Splice packs).
+
+When Destin is in Ableton and asks how to execute a recipe step, prefer
+companion mode (`knowledge/ableton/companion-mode.md`) over verbal-only
+directions.
+
+Full subsystem spec: `docs/superpowers/specs/subsystems/08-teardown-pipeline.md`.

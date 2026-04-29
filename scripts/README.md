@@ -84,3 +84,66 @@ SPOTIFY_E2E=1 .venv/Scripts/python -m pytest tests/test_real_api.py -v
 | `ReccoBeats rate-limited` | The script stops cleanly with partial progress preserved. Wait a few minutes; re-run. |
 | Coverage suspiciously low (<70% from ReccoBeats) | Check that you're enriching real Spotify track IDs (not local files). Open `taste/tracks.csv` and look at the `source` column distribution. |
 | `tracks.csv` got corrupted somehow | The script auto-backs-up to `tracks.csv.corrupt-<timestamp>` and rebuilds. Check for a backup file in `taste/`. |
+
+## Teardowns (Subsystem #8)
+
+`scripts/teardown.py` — analysis CLI invoked by the `/teardown` skill.
+
+### Pre-requisites
+
+- ffmpeg on PATH. Install:
+  ```bash
+  winget install Gyan.FFmpeg
+  ```
+  Verify with:
+  ```bash
+  cd scripts && .venv/Scripts/python teardown.py --check-deps
+  ```
+
+### Running manually
+
+Normally invoked through the `/teardown` skill (see `.claude/skills/teardown/`).
+Manual usage:
+
+```bash
+cd scripts
+.venv/Scripts/python teardown.py --slug john-summit-where-you-are \
+    --url https://www.youtube.com/watch?v=... \
+    --csv-context 5n4erMKwoH0Bky4VKZWWCQ
+```
+
+CLI flags:
+
+| Flag | Effect |
+|---|---|
+| `--slug <name>` | Output directory under `teardowns/`. Required. |
+| `--url <url>` | Audio source URL (yt-dlp downloads it). Mutually exclusive with `--local`. |
+| `--local <path>` | Use an existing local audio file. Mutually exclusive with `--url`. |
+| `--csv-context <spotify-id>` | Embed the matching `taste/tracks.csv` row in `analysis.json`. |
+| `--force` | Overwrite an existing `teardowns/<slug>/`. |
+| `--check-deps` | Print versions of ffmpeg / librosa / yt-dlp / matplotlib and exit. |
+| `--dry-run` | Print the planned operations and exit. |
+
+### Tests
+
+Default suite (no real audio downloads):
+
+```bash
+cd scripts && .venv/Scripts/python -m pytest tests/test_teardown_*.py -v
+```
+
+End-to-end on synthetic fixture (slow; no network):
+
+```bash
+cd scripts && TEARDOWN_E2E=1 .venv/Scripts/python -m pytest tests/test_teardown_e2e.py -v
+```
+
+### Troubleshooting
+
+| Symptom | Likely cause / fix |
+|---|---|
+| `ERROR: ffmpeg not found on PATH` | `winget install Gyan.FFmpeg`, restart shell, re-run. |
+| `ERROR: yt-dlp download failed: ... 403` | Video is age-gated or geo-blocked. Drop the audio file at `teardowns/<slug>/source.wav` and re-invoke with `--local`. |
+| `ERROR: audio is suspiciously short` | Partial / DRM-blocked download. Try a different URL. |
+| Scrub strip ships as 4 separate `scrub-strip-N.png` files | Combined-axis render failed (Windows matplotlib quirk). Functional fallback; Claude reads them individually. |
+| yt-dlp itself feels stale | Bump `yt-dlp` in `pyproject.toml` to the latest release; re-run `uv sync --extra dev`. |
