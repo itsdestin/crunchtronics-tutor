@@ -159,10 +159,24 @@ YouTube URL, local file path, Spotify track ID, or free-text track name
 
 Per-teardown artifacts land in `teardowns/<slug>/`:
 - `source.wav` (gitignored) — yt-dlp output or manually-dropped file
-- `analysis.json` — librosa-derived numerical analysis
-- `scrub-strip.png` — 4-panel time-aligned visualization Claude reads
+- `analysis.json` — librosa-derived numerical analysis (per-band RMS,
+  HPSS, spectral centroid, onset density, sidechain detection)
+- `scrub-strip.png` — 6-panel time-aligned visualization Claude reads
+- `web_findings.md` — web-search snapshot (stems, breakdowns, credits)
 - `teardown.md` — narrative ("what's happening when")
 - `recipe.md` — numbered build steps targeting Ableton Live 12 Lite
+  (or stems-study mode when web_findings.md surfaces verified stems)
+
+**Trust hierarchy for narrative authoring** (per spec §2.5):
+1. `taste/tracks.csv` (ReccoBeats) — authoritative for track-level facts
+2. Measured spectral features — authoritative for time-localized claims
+3. Web findings — supporting only, cited with source URL + access date
+4. Genre/artist priors — background context, structural labels only
+
+Forbidden: cause-inference for energy ("the bass enters"), specific
+instrument identifications without measurement support ("vocal lead"),
+un-measurable production-technique claims (octave doubling, specific
+reverb settings).
 
 Recipe rules: target the Lite floor (8 audio + 8 MIDI, Simpler-only,
 2 sends); include at least one `**Intro+ note:**` callout; reference
