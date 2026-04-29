@@ -198,11 +198,17 @@ Most common Camelot keys: ...
 
 ### 7.5 `teardowns/<slug>/`
 
-Three files per teardown:
+> **Substantially extended by Subsystem #8** during implementation. See `docs/superpowers/specs/subsystems/08-teardown-pipeline.md` §2.1–§2.6 and §3.9–§3.12 for the authoritative current schema. The v1.0 sketch below is preserved as the original architectural intent; the actual artifact set is broader and the narrative-authoring rules are stricter.
+
+Three files per teardown (v1.0 sketch):
 
 - `analysis.json` — librosa output: `{ tempo, beat_times, sections: [{start, duration, label}], chroma, mfcc_summary }`
 - `teardown.md` — narrative ("0:00–0:16 intro: filtered piano + atmospheric pad + delayed drum hit at 0:08; the kick enters at 0:16 with a hard sidechained pluck...")
 - `recipe.md` — numbered build steps written to the Lite floor (so they work on any edition) ("1. Set tempo to 126 BPM. 2. Create a Drum Rack on MIDI track 1. 3. Load a kick from your Splice library matching the punchy / short-decay character described in section 1..."). Sections that would benefit from Intro+ features get an inline "**Intro+ note:**" callout (e.g., "with a 9th MIDI track available, you could split the bass layers across two channels for independent processing")
+
+**Note on the narrative example above:** that 0:00–0:16 sketch ("filtered piano + atmospheric pad + delayed drum hit", "sidechained pluck") is the kind of phrasing the v1.1 amendment **forbids** — instrument-level claims that the analysis surface can't actually verify. The v1.1 trust hierarchy (Subsystem #8 spec §2.5) constrains narrative to what's measurable in `analysis.json` (per-band RMS, HPSS, centroid, sidechain detection) and citable from `web_findings.md`. The spec example is preserved here only as the original architectural intent.
+
+**v1.1 actual artifact set per teardown:** `source.wav` (gitignored), `analysis.json` (v0.2.0 schema), `scrub-strip.png` (6-panel visualization), `web_findings.md`, `teardown.md`, `recipe.md`.
 
 ### 7.6 `sessions/YYYY-MM-DD-<topic>.md`
 
@@ -267,20 +273,22 @@ Each sub-project's brainstorm should begin: "Read `docs/superpowers/specs/2026-0
 
 ## 11. Decisions (the 12 defaults)
 
-| # | Decision | Default | Rationale |
-|---|---|---|---|
-| 1 | Spotify app registration | User registers a Spotify Developer app once; subsystem #5 documents the steps | Required, no automation around it |
-| 2 | Audio enrichment service | **GetSongBPM** primary | Free, has API, BPM+key cover essentials; `source` column makes service swappable |
-| 3 | Splice subscription | **Recommend but defer** until teardown ships (Phase 5) | No reason to pay before using it |
-| 4 | Nudge cadence | **M/W/F mornings**, configurable in #4 | Frequent enough to engage, sparse enough not to pester |
-| 5 | Git remote | **Local-only**, no remote until user decides | Zero risk of secrets leak by default |
-| 6 | Audio analyzer | **librosa** (Python) | Maturest, easiest Windows install, best docs |
-| 7 | Music theory framing | **Top-down** — genre patterns first, theory invoked as needed to explain them | User is learning to make music he likes, not pass a theory exam |
-| 8 | Hardware/software ordering | **Together** — MPK mapped to Ableton defaults from day 1 of curriculum | Builds muscle memory while learning concepts |
-| 9 | CLAUDE.md scope | Project description **+** Claude pedagogy conventions (always check curriculum, default to top-down framing, prefer reactive companion to verbal directions when Ableton is open) | The pedagogy *is* part of the project |
-| 10 | Audio acquisition | **yt-dlp default**, manual file drop fallback | User selected this in brainstorm |
-| 11 | Sessions log retention | **Keep all logs forever**, no rotation | Cheap; useful for "what did we cover 6 months ago" |
-| 12 | Spotify pull frequency | **Weekly** scheduled + on-demand | Taste evolves slowly |
+> Some defaults below were overridden during subsystem implementation. The override is recorded inside the relevant subsystem spec (under that spec's "Master-spec overrides" section); follow the Override pointers to find the authoritative current decision.
+
+| # | Decision | Default | Rationale | Override |
+|---|---|---|---|---|
+| 1 | Spotify app registration | User registers a Spotify Developer app once; subsystem #5 documents the steps | Required, no automation around it | Subsystem #5 §2 — superseded by the `spotify-services` marketplace plugin (no per-project app registration needed) |
+| 2 | Audio enrichment service | **GetSongBPM** primary | Free, has API, BPM+key cover essentials; `source` column makes service swappable | Subsystem #6 §2.1 — primary swapped to **ReccoBeats** (no key, returns full audio-features vector); GetSongBPM kept as fallback |
+| 3 | Splice subscription | **Recommend but defer** until teardown ships (Phase 5) | No reason to pay before using it | (no override) |
+| 4 | Nudge cadence | **M/W/F mornings**, configurable in #4 | Frequent enough to engage, sparse enough not to pester | Subsystem #4 §2 — replaced with session-start nudges (lazy, fire on next interaction; staleness threshold 2 days) instead of `/schedule` cron |
+| 5 | Git remote | **Local-only**, no remote until user decides | Zero risk of secrets leak by default | (no override) |
+| 6 | Audio analyzer | **librosa** (Python) | Maturest, easiest Windows install, best docs | Subsystem #8 v1.1 §2.4 — extended with HPSS, per-band RMS, spectral centroid, onset density per band, sidechain detection. Note: `librosa.beat.beat_track` segfaults on numba 0.65 + Py 3.12 Win; the implementation uses `onset_strength` + `feature.tempo` + `beat.plp` instead |
+| 7 | Music theory framing | **Top-down** — genre patterns first, theory invoked as needed to explain them | User is learning to make music he likes, not pass a theory exam | (no override) |
+| 8 | Hardware/software ordering | **Together** — MPK mapped to Ableton defaults from day 1 of curriculum | Builds muscle memory while learning concepts | (no override) |
+| 9 | CLAUDE.md scope | Project description **+** Claude pedagogy conventions (always check curriculum, default to top-down framing, prefer reactive companion to verbal directions when Ableton is open) | The pedagogy *is* part of the project | Extended (not overridden) — subsystems #5 / #6 / #7 / #4 / #8 each contributed their own CLAUDE.md sections during implementation |
+| 10 | Audio acquisition | **yt-dlp default**, manual file drop fallback | User selected this in brainstorm | (no override) |
+| 11 | Sessions log retention | **Keep all logs forever**, no rotation | Cheap; useful for "what did we cover 6 months ago" | (no override) |
+| 12 | Spotify pull frequency | **Weekly** scheduled + on-demand | Taste evolves slowly | Subsystem #5 §2 — replaced with on-demand only (no `/schedule` entry); pulls are selective with persisted playlist choice |
 
 ## 12. Out of scope
 
@@ -293,6 +301,19 @@ Each sub-project's brainstorm should begin: "Read `docs/superpowers/specs/2026-0
 
 ## 13. Next steps
 
-1. User reviews this spec.
-2. On approval, invoke `superpowers:writing-plans` to produce a **master implementation plan** that schedules each subsystem as its own brainstorm → spec → plan → implementation hand-off in the build order from §9.
-3. Begin with subsystem #1 (Project Shell). Each subsequent subsystem is launched as its own session referencing this master spec.
+**Implementation status (2026-04-29):** all 9 subsystems shipped across 5 sessions A–E (orchestration plan: `docs/superpowers/plans/2026-04-26-master-orchestration.md`). Subsystem #8 (Teardown Pipeline) shipped v1.0 on 2026-04-28 and was amended to v1.1 on 2026-04-29 after the v1.0 verification gate exposed a hallucination failure mode (see `docs/superpowers/specs/subsystems/08-teardown-pipeline.md` §2.4–§2.6). System is live and ready for use.
+
+**For the user:** open Claude Code in this project, then any of these commands work:
+
+- "pull my Spotify data" — refresh the playlists snapshot
+- "enrich my tracks" — fill in audio-feature data via ReccoBeats
+- "regenerate the taste profile" — refresh `taste/profile.md` and the artist pages
+- `/teardown <youtube-url>` or "teardown this track: <url>" — full teardown of a specific track
+- Just chat — the curriculum surfaces what to work on next; sessions/ logs the conversation; CLAUDE.md keeps Claude on the pedagogy
+
+**Out-of-scope user-action gates** (not blocked by anything technical, just waiting for use):
+
+- The user has actually used the system for one full Ableton session and the curriculum has at least one `[done]` lesson
+- The user has run at least one teardown end-to-end and used the recipe to build something in Ableton
+
+**Spec maintenance going forward:** subsystem-level spec changes live in their own files under `docs/superpowers/specs/subsystems/` with a "Master-spec overrides" section pointing back here. This master spec is the immutable architectural reference; subsystem specs are the authoritative current behavior.

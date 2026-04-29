@@ -89,6 +89,8 @@ SPOTIFY_E2E=1 .venv/Scripts/python -m pytest tests/test_real_api.py -v
 
 `scripts/teardown.py` — analysis CLI invoked by the `/teardown` skill.
 
+**Schema version:** `analysis.json.tool_version` is `"0.2.0"` as of v1.1 (2026-04-29). v0.2.0 adds these top-level keys to the v1.0 envelope: `per_band_rms` (5 EDM-tuned bands: sub 20-60Hz / bass 60-250 / low_mids 250-2k / highs 2k-8k / air 8k+), `hpss` (harmonic + percussive RMS curves), `spectral_centroid`, `onset_density` (per band per bar), `sidechain` (kick-aligned bass dip detection with measured dB depth + consistency %). The scrub strip is now 6 panels (or 6 separate PNGs on the per-panel fallback). See `docs/superpowers/specs/subsystems/08-teardown-pipeline.md` §3.9 for the full schema.
+
 ### Pre-requisites
 
 - ffmpeg on PATH. Install:

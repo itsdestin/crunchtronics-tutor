@@ -390,7 +390,7 @@ WORKFLOW
 - **Depends on:** Session C minimum; ideally also Session D
 - **Parallel with:** none
 - **Estimated length:** 2–3 sessions (most ambitious subsystem)
-- **Status:** [x] complete (2026-04-29 — plan at `docs/superpowers/plans/2026-04-28-session-e-teardown-pipeline.md`; subsystem #8 shipped; verification gate passed on John Summit — "crystallized (feat. Inéz)")
+- **Status:** [x] complete (v1.0 shipped 2026-04-28 from `docs/superpowers/plans/2026-04-28-session-e-teardown-pipeline.md`; the v1.0 verification-gate teardown for John Summit — *crystallized (feat. Inéz)* exposed a hallucination failure mode in narrative authoring, which drove the v1.1 amendment shipped 2026-04-29 from `docs/superpowers/plans/2026-04-29-session-e-v1.1-amendment.md`. v1.1 added per-band RMS / HPSS / spectral centroid / onset density / sidechain detection, a four-tier trust hierarchy for narrative authoring, and a web-findings step. v1.1 verification gate passed cleanly on the same track — see spec `docs/superpowers/specs/subsystems/08-teardown-pipeline.md` §2.4–§2.6.)
 
 **Hand-off prompt:**
 
